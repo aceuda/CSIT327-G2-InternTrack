@@ -16,8 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('interntrack_app.urls')),
+    path('login/', include('interntrack_app.urls')),   # include your app urls
+    path('register/', include('interntrack_app.urls')),
+    path('dashboard/', include('interntrack_app.urls')),
+    path('logout/', include('interntrack_app.urls')),
+
+    # redirect root URL to login
+    path('', lambda request: redirect('login')),  
 ]

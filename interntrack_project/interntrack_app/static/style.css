@@ -1,0 +1,146 @@
+/* General Reset & Layout */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container: Flex Layout */
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Left Panel */
+.left-panel {
+  flex: 1;
+  background: linear-gradient(to bottom right, #1e3a8a, #1e40af); /* Navy gradient */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.left-panel .logo-box img {
+  width: 17rem;
+  height: 10rem;
+  border-radius: 12px; /* ⬅️ Add or update this line */
+}
+.left-panel h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 0rem;
+}
+
+.left-panel .subtitle {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 0rem;
+}
+
+.left-panel .description {
+  font-size: 1rem;
+  color: #e0e7ff;
+  max-width: 280px;
+}
+
+/* Right Panel */
+.right-panel {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.login-box .subtext {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* Form */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  margin-top: 1rem;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  margin-top: 2rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #1d74c4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #155eab;
+}
+
+/* Footer text */
+.text-center {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.text-center a {
+  color: #1d74c4;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.text-center a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive (mobile) */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    display: none;
+  }
+
+  .right-panel {
+    flex: none;
+    height: 100vh;
+  }
+}
