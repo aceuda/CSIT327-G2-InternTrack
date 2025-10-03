@@ -55,7 +55,7 @@ ROOT_URLCONF = 'interntrack_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,3 +121,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Authentication settings
+LOGIN_URL = 'login'               # where to redirect when login is required
+LOGIN_REDIRECT_URL = 'dashboard'  # where to go after successful login
+LOGOUT_REDIRECT_URL = 'login'     # where to go after logout
