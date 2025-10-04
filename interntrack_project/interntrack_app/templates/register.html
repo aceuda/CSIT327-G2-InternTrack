@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternTrack - Register</title>
+  <style>
+    /* Reset and base */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Container: Flex layout */
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Left panel */
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(to bottom right, #1e3a8a, #1e40af);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .left-panel .logo-box img {
+     width: 17rem;
+    height: 10rem;
+    border-radius: 12px; /* ⬅️ Add or update this line */
+    }
+
+    .left-panel h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    }
+
+    .left-panel .subtitle {
+    font-size: 2rem;
+    font-weight: 500;
+    margin-bottom: 0.7rem;
+    }
+
+    .left-panel .description {
+    font-size: 1rem;
+    color: #e0e7ff;
+    max-width: 350px;
+    }
+
+    /* Right panel */
+    .right-panel {
+      flex: 1;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .register-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .register-box h2 {
+      font-size: 1.75rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      text-align: center;
+    }
+
+    .register-box .subtext {
+      font-size: 1rem;
+      color: #6b7280;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* Form styles */
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      margin-top: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 2rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: #1d74c4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #155eab;
+    }
+
+    /* Footer text */
+    .text-center {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .text-center a {
+      color: #1d74c4;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .text-center a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive (mobile) */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        display: none;
+      }
+
+      .right-panel {
+        flex: none;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="logo-box">
+        <img src="{% static 'images/InternTrack_Logo.jpg' %}" alt="InternTrack Logo" />
+      </div>
+      <h1>InternTrack</h1>
+      <div class="subtitle">Join InternTrack Today</div>
+      <div class="description">Start managing internships efficiently</div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <div class="register-box">
+        <h2>Create Account</h2>
+        <div class="subtext">Fill in your details to get started</div>
+
+        <!-- Show Django messages -->
+        {% if messages %}
+          <div class="messages" style="color: red; text-align: center; margin-bottom: 10px;">
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'register' %}">
+          {% csrf_token %}
+          <label for="username">Username</label>
+          <input id="username" type="text" name="username" placeholder="Choose a username" required />
+
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" placeholder="Enter your email" required />
+
+          <label for="password1">Password</label>
+          <input id="password1" type="password" name="password1" placeholder="Create a password" required />
+
+          <label for="password2">Confirm Password</label>
+          <input id="password2" type="password" name="password2" placeholder="Confirm your password" required />
+
+          <button type="submit">Create Account</button>
+        </form>
+
+        <div class="text-center">
+          Already have an account? <a href="{% url 'login' %}">Sign in here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

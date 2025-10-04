@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternTrack - Logged Out</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+    --white: #ffffff;
+    --light-gray: #f5f5f5; 
+    --text-gray: #6c757d;
+    --dark-blue: #1d74c4; /* Added */
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(to bottom right, #1e3a8a, #1e40af);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.logout-box {
+    background: var(--white);
+    padding: 50px 70px;
+    border-radius: 8px;
+    width: 320px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    width: 150px; /* Adjusted to smaller size */
+    height: auto; /* maintain aspect ratio */
+    margin-right: 15px;
+}
+
+h2 {
+    font-size: 2rem; /* fixed typo */
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 10px 0;
+}
+
+p {
+    font-size: 1rem;
+    color: var(--text-gray);
+    margin: 0 0 30px 0;
+}
+
+.login-button {
+    display: inline-block;
+    text-decoration: none;
+    background: var(--dark-blue);
+    color: var(--white);
+    padding: 12px 60px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: background 0.3s ease;
+    border: none;
+}
+
+.login-button:hover {
+    background: #1e2a38;
+}
+
+    </style>
+</head>
+<body>
+    <div class="logout-box">
+        <div class="logo-container">
+            <img class="logo" src="{% static 'images/InternTrack_Logo.jpg' %}" alt="InternTrack Logo">
+        </div>
+        <h2>Logged Out</h2>
+        <p>You have been successfully logged out.</p>
+        <a href="{% url 'login' %}" class="login-button">Login</a>
+    </div>
+</body>
+</html>

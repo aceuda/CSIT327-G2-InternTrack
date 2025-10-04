@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | InternTrack</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<div class="container">
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <div class="logo-box">
+      <img src="{% static 'images/InternTrack_Logo.jpg' %}" alt="InternTrack Logo">
+    </div>
+    <h1>InternTrack</h1>
+    <p class="subtitle">Internship Monitoring Made Simple</p>
+    <p class="description">Track, manage, and monitor internships with ease</p>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="login-box">
+      <h2>Welcome Back</h2>
+      <p class="subtext">Sign in to your account to continue</p>
+
+      <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter your username"
+          required
+        >
+
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+        >
+
+        <button type="submit">Sign In</button>
+      </form>
+
+      <div class="text-center">
+        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
