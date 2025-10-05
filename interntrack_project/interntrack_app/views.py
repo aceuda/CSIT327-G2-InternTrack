@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from rest_framework import viewsets
+from .serializers import UserSerializer
 
 # LOGIN
 def login_view(request):
@@ -67,3 +69,6 @@ def logout_view(request):
     return redirect("login")
 
 # Create your views here.
+class UserViewset(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
