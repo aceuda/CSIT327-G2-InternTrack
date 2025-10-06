@@ -19,18 +19,25 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from interntrack_app import views
+from interntrack_app.views import CustomTokenView
+
 from .router import router
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('login/', include('interntrack_app.urls')),   # include your app urls
-    path('register/', include('interntrack_app.urls')),
-    path('dashboard/', include('interntrack_app.urls')),
-    path('logout/', include('interntrack_app.urls')),
+    path('admin/', admin.site.urls), 
+    path('auth/login/', CustomTokenView.as_view(), name='token_obtain_pair'),
+    path('login/', views.login_view, name='login'),   # include your app urls
+    path('register/', views.register_view, name='register'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('logout/', views.logout_view, name='logout'),
 
     # redirect root URL to login
     path('', lambda request: redirect('login')),  
     path('', include(router.urls)),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('swagger/', SpectacularSwaggerView.as_view(), name='schema_swagger_ui'),
+    
 ]
+
+

@@ -1,45 +1,40 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from interntrack_app.serializers import BaseUserSerializer, CustomTokenObtainPairSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import viewsets
 
-# ✅ LOGIN with email
+
+# LOGIN
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
-        if not email or not password:
-            messages.error(request, "Please enter both email and password")
-            return render(request, 'login.html')
+        if not username or not password:
+            messages.error(request, "Please enter both username and password")
+            return render(request, 'interntrack_app/login.html')
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            messages.error(request, "No account found with that email")
-            return render(request, 'login.html')
-
-        user = authenticate(request, username=user.username, password=password)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            messages.success(request, "Welcome back!")
+            messages.success(request, "Welcome back! Successfully logged in")
             return redirect('dashboard')
         else:
-            messages.error(request, "Incorrect password")
+            messages.error(request, "Invalid credentials")
             return render(request, 'login.html')
 
     return render(request, 'login.html')
 
 
-# ✅ REGISTER with new fields
+# REGISTER
 def register_view(request):
     if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        suffix = request.POST.get("suffix") or ""
-        birthdate = request.POST.get("birthdate")
-        year_level = request.POST.get("year_level")
+        username = request.POST.get("username")
         email = request.POST.get("email")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
@@ -48,43 +43,43 @@ def register_view(request):
             messages.error(request, "Passwords do not match")
             return redirect("register")
 
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken")
+            return redirect("register")
+
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered")
             return redirect("register")
 
-        # Generate a username from email (or use any unique logic)
-        username = email.split("@")[0]
-        counter = 1
-        original_username = username
-        while User.objects.filter(username=username).exists():
-            username = f"{original_username}{counter}"
-            counter += 1
-
         # Create user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password1,
-            first_name=first_name,
-            last_name=last_name
-        )
-
-        # Optional: store extra fields (suffix, birthdate, year_level) — needs profile model
-        # For now, just show a success message
+        User.objects.create_user(username=username, email=email, password=password1)
         messages.success(request, "Account created successfully! Please log in.")
         return redirect("login")
 
     return render(request, "register.html")
 
 
-# ✅ Protected Dashboard
+# DASHBOARD (protected)
 @login_required
 def dashboard_view(request):
     return render(request, "dashboard.html")
 
 
-# ✅ Logout
+# LOGOUT
 def logout_view(request):
     logout(request)
     return render(request, "logout.html")
     return redirect("login")
+
+User = get_user_model()
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = BaseUserSerializer
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
+class CustomTokenView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
