@@ -22,7 +22,7 @@
 
     /* Left panel */
     .left-panel {
-      flex: 1;
+      flex: 1.2;
       background: linear-gradient(to bottom right, #1e3a8a, #1e40af);
       color: white;
       display: flex;
@@ -59,7 +59,7 @@
 
     /* Right panel */
     .right-panel {
-      flex: 1;
+      flex: 0.8;
       background-color: #ffffff;
       display: flex;
       justify-content: center;
@@ -69,7 +69,7 @@
 
     .register-box {
       width: 100%;
-      max-width: 400px;
+      max-width: 450px;
     }
 
     .register-box h2 {
@@ -80,6 +80,7 @@
     }
 
     .register-box .subtext {
+      padding: 1rem;
       font-size: 1rem;
       color: #6b7280;
       margin-bottom: 2rem;
@@ -96,6 +97,7 @@
 
     input[type="text"],
     input[type="email"],
+    input[type="username"],
     input[type="password"],
     input[type="date"] {
       width: 100%;
@@ -205,6 +207,9 @@
 
           <label for="email">Email</label>
           <input id="email" type="email" name="email" required />
+
+          <label for="username">Username</label>
+          <input id="username" type="username" name="username" required />
 
           <label for="password1">Password</label>
           <input id="password1" type="password" name="password1" required />

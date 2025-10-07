@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
 
+User = get_user_model()
 
 # LOGIN
 def login_view(request):
@@ -21,6 +22,7 @@ def login_view(request):
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            print("✅ User logged in:", user.username)
             login(request, user)
             messages.success(request, "Welcome back! Successfully logged in")
             return redirect('dashboard')
@@ -32,12 +34,38 @@ def login_view(request):
 
 
 # REGISTER
+# def register_view(request):
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         email = request.POST.get("username")
+#         password1 = request.POST.get("password1")
+#         password2 = request.POST.get("password2")
+
+#         if password1 != password2:
+#             messages.error(request, "Passwords do not match")
+#             return redirect("register")
+
+#         if User.objects.filter(username=username).exists():
+#             messages.error(request, "Username already taken")
+#             return redirect("register")
+
+#         if User.objects.filter(email=email).exists():
+#             messages.error(request, "Email already registered")
+#             return redirect("register")
+
+#         # Create user
+#         User.objects.create_user(username=username, email=email, password=password1)
+#         messages.success(request, "Account created successfully! Please log in.")
+#         return redirect("login")
+
+#     return render(request, "register.html")
 def register_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password1 = request.POST.get("password1")
-        password2 = request.POST.get("password2")
+        data = request.POST
+        username = data.get("username")  
+        email = data.get("email")
+        password1 = data.get("password1")
+        password2 = data.get("password2")
 
         if password1 != password2:
             messages.error(request, "Passwords do not match")
@@ -51,8 +79,18 @@ def register_view(request):
             messages.error(request, "Email already registered")
             return redirect("register")
 
-        # Create user
-        User.objects.create_user(username=username, email=email, password=password1)
+        # Create user using your custom manager
+        User.objects.create_user(
+            username=username,
+            email = email,
+            password=password1,
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
+            birthdate=data.get("birthdate"),
+            year_level=data.get("year_level"),
+            user_type="student"  # default role
+        )
+
         messages.success(request, "Account created successfully! Please log in.")
         return redirect("login")
 
@@ -62,7 +100,11 @@ def register_view(request):
 # DASHBOARD (protected)
 @login_required
 def dashboard_view(request):
-    return render(request, "dashboard.html")
+    print("Logged in user:", request.user)  # ✅ This will show in your terminal
+    return render(request, "dashboard.html", {
+        "user": request.user
+    })
+
 
 
 # LOGOUT
