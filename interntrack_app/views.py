@@ -98,12 +98,22 @@ def register_view(request):
 
 
 # DASHBOARD (protected)
+# @login_required
+# def dashboard_view(request):
+#     #print("Logged in user:", request.user)  # ✅ This will show in your terminal
+#     return render(request, "dashboard.html", {
+#         "user": request.user
+#     })
 @login_required
 def dashboard_view(request):
-    print("Logged in user:", request.user)  # ✅ This will show in your terminal
-    return render(request, "dashboard.html", {
-        "user": request.user
-    })
+    user = request.user
+
+    if user.user_type == 'admin':
+        # Redirect to admin dashboard or render a different template
+        return render(request, "admin_dashboard.html", {"user": user})
+    
+    # Default student dashboard
+    return render(request, "dashboard.html", {"user": user})
 
 
 
