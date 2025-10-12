@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>InternTrack - Register</title>
   <style>
-    /* Reset and base */
     body, html {
       margin: 0;
       padding: 0;
@@ -14,15 +13,16 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Container: Flex layout */
+
     .container {
       display: flex;
       height: 100vh;
+      overflow: hidden;
     }
 
-    /* Left panel */
+
     .left-panel {
-      flex: 1.2;
+      flex: 2;
       background: linear-gradient(to bottom right, #1e3a8a, #1e40af);
       color: white;
       display: flex;
@@ -33,67 +33,81 @@
       text-align: center;
     }
 
+
     .left-panel .logo-box img {
-     width: 17rem;
-    height: 10rem;
-    border-radius: 12px; /* ⬅️ Add or update this line */
+      width: 14rem;
+      height: 8rem;
+      border-radius: 12px;
     }
+
 
     .left-panel h1 {
-    font-size: 4rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
     }
+
 
     .left-panel .subtitle {
-    font-size: 2rem;
-    font-weight: 500;
-    margin-bottom: 0.7rem;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
     }
+
 
     .left-panel .description {
-    font-size: 1rem;
-    color: #e0e7ff;
-    max-width: 350px;
+      font-size: 0.9rem;
+      color: #e0e7ff;
+      max-width: 300px;
     }
 
-    /* Right panel */
+
     .right-panel {
-      flex: 0.8;
+      flex: 1;
+      max-width: 600px;
       background-color: #ffffff;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 2rem;
+      padding: 1rem;
+      overflow: hidden;
     }
+
 
     .register-box {
       width: 100%;
       max-width: 450px;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+      box-sizing: border-box;
     }
+
 
     .register-box h2 {
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
       text-align: center;
     }
+
 
     .register-box .subtext {
-      padding: 1rem;
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #6b7280;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       text-align: center;
     }
 
-    /* Form styles */
+
     label {
       display: block;
       font-weight: 600;
-      margin-bottom: 0.25rem;
-      margin-top: 1rem;
+      margin-bottom: 0.2rem;
+      margin-top: 0.7rem;
+      font-size: 0.85rem;
     }
+
 
     input[type="text"],
     input[type="email"],
@@ -101,38 +115,41 @@
     input[type="password"],
     input[type="date"] {
       width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
+      padding: 0.5rem;
+      font-size: 0.9rem;
       border: 1px solid #d1d5db;
-      border-radius: 6px;
+      border-radius: 5px;
       box-sizing: border-box;
     }
 
+
     button {
       width: 100%;
-      margin-top: 2rem;
-      padding: 0.75rem;
-      font-size: 1rem;
+      margin-top: 1.2rem;
+      padding: 0.6rem;
+      font-size: 0.95rem;
       font-weight: bold;
       background-color: #1d74c4;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
 
     button:hover {
       background-color: #155eab;
     }
 
-    /* Footer text */
+
     .text-center {
       text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.95rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
       color: #6b7280;
     }
+
 
     .text-center a {
       color: #1d74c4;
@@ -140,23 +157,35 @@
       font-weight: 600;
     }
 
+
     .text-center a:hover {
       text-decoration: underline;
     }
 
-    /* Responsive (mobile) */
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
       }
 
+
       .left-panel {
         display: none;
       }
 
+
       .right-panel {
         flex: none;
         height: 100vh;
+        max-width: 100%;
+        padding: 1rem;
+      }
+
+
+      .register-box {
+        max-height: 100vh;
+        overflow-y: auto;
+        padding: 0.5rem;
       }
     }
   </style>
@@ -173,11 +202,13 @@
       <div class="description">Start managing internships efficiently</div>
     </div>
 
+
     <!-- Right Panel -->
     <div class="right-panel">
       <div class="register-box">
         <h2>Create Account</h2>
         <div class="subtext">Fill in your details to get started</div>
+
 
         {% if messages %}
           <div class="messages" style="color: red; text-align: center;">
@@ -187,38 +218,50 @@
           </div>
         {% endif %}
 
+
         <form method="post" action="{% url 'register' %}">
           {% csrf_token %}
-          
+
+
           <label for="first_name">First Name</label>
           <input id="first_name" type="text" name="first_name" required />
+
 
           <label for="last_name">Last Name</label>
           <input id="last_name" type="text" name="last_name" required />
 
+
           <label for="suffix">Suffix (optional)</label>
           <input id="suffix" type="text" name="suffix" placeholder="e.g. Jr., Sr., III" />
+
 
           <label for="birthdate">Birthdate</label>
           <input id="birthdate" type="date" name="birthdate" required />
 
+
           <label for="year_level">Year Level</label>
           <input id="year_level" type="text" name="year_level" placeholder="e.g. 1st Year, 2nd Year" required />
+
 
           <label for="email">Email</label>
           <input id="email" type="email" name="email" required />
 
+
           <label for="username">Username</label>
           <input id="username" type="username" name="username" required />
+
 
           <label for="password1">Password</label>
           <input id="password1" type="password" name="password1" required />
 
+
           <label for="password2">Confirm Password</label>
           <input id="password2" type="password" name="password2" required />
 
+
           <button type="submit">Create Account</button>
         </form>
+
 
         <div class="text-center">
           Already have an account? <a href="{% url 'login' %}">Sign in here</a>

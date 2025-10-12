@@ -13,7 +13,7 @@ Django
 Supabase(postgreSQL)
 
 ## <mark>Setup & run instructions</mark>
-1. Clone the [repository](https://github.com/aceuda/FinalProject_InternTrack.git) to your local
+1. Clone the [repository](https://github.com/aceuda/CSIT327-G2-InternTrack.git) to your local
 2. run `pip -m venv env` to setup virtual env
 2. run `./env/Scripts/activate`
 3. run `pip install -r requirements.txt` to download dependencies
@@ -24,5 +24,18 @@ Supabase(postgreSQL)
     
 
 ```
-## <mark>Team Members: </mark>
+## <mark>Team Members: 
+Information Management:
+    Ace Denver B. Abella | Frontend Developer | acedenver.abella@cit.edu
+    Eufronio Aaron III   | Backend Developer  | eufronio.aaroniii@cit.edu
+
+    Project Management:
+    Kenneth Alicaba      | Product Owner   | kenneth.alicaba@cit.edu
+    Joseph Cris Arpon    | Business Analyst| josephcris.arpon@cit.edu
+    Ralph John Arnejo    | Business Analyst| ralphjohn.arnejo@cit.edu
+    Lord Anthone Acebedo | Scrum Master    | lordanthone.acebedo@cit.edu
+
+</mark>
+
+
 
