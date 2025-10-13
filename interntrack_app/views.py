@@ -8,9 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
 
+#Creates & authenticates users via HTML forms
+#Handles the logic (HTML forms or API requests)
 User = get_user_model()
 
-# LOGIN
+# LOGIN(Handles login)
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -59,6 +61,7 @@ def login_view(request):
 #         return redirect("login")
 
 #     return render(request, "register.html")
+#Handle User Registration
 def register_view(request):
     if request.method == "POST":
         data = request.POST
@@ -104,6 +107,7 @@ def register_view(request):
 #     return render(request, "dashboard.html", {
 #         "user": request.user
 #     })
+#Diplay the dashboard after login
 @login_required
 def dashboard_view(request):
     user = request.user
@@ -124,6 +128,7 @@ def logout_view(request):
     return redirect("login")
 
 User = get_user_model()
+#Provides full CRUD API for User
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = BaseUserSerializer
@@ -133,5 +138,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
     
+#Handles API-based login via JWT
 class CustomTokenView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
