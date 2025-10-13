@@ -3,6 +3,8 @@
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.db import models
 
+#Interact with the database (create/authenticate users)
+#Model for tracking intern progress
 class Intern(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -10,6 +12,8 @@ class Intern(models.Model):
 
     def __str__(self):
         return self.name
+
+#Role options
 class UserRoles(models.TextChoices):
     """
     Create/Modify user roles here
@@ -18,6 +22,7 @@ class UserRoles(models.TextChoices):
     ADMIN = 'admin', 'Admin'
     STUDENT = 'student', 'Student'
 
+#Handles how users are created, both normal users and superusers.
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
         if not username:

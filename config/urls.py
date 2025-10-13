@@ -24,6 +24,7 @@ from interntrack_app.views import CustomTokenView
 
 from .router import router
 
+#Define endpoints for both HTML pages and API routes
 urlpatterns = [
     path('admin/', admin.site.urls), 
     path('auth/login/', CustomTokenView.as_view(), name='token_obtain_pair'),
