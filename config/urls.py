@@ -20,7 +20,7 @@ from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from interntrack_app import views
-from interntrack_app.views import CustomTokenView
+from interntrack_app.views import AdminRegisterView, CustomTokenView, DashboardView, LoginView, RegisterView
 
 from .router import router
 
@@ -28,9 +28,10 @@ from .router import router
 urlpatterns = [
     path('admin/', admin.site.urls), 
     path('auth/login/', CustomTokenView.as_view(), name='token_obtain_pair'),
-    path('login/', views.login_view, name='login'),   # include your app urls
-    path('register/', views.register_view, name='register'),
-    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('login/', LoginView.as_view(), name='login'),   # include your app urls
+    path("register/", RegisterView.as_view(), name="register"),
+    path('register/admin/', AdminRegisterView.as_view(), name='admin_register'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('logout/', views.logout_view, name='logout'),
 
     # redirect root URL to login
