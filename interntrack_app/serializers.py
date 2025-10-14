@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import User
+from .models import AdminProfile, StudentProfile, User
 #Serializes the User model for API registration/login
 #bridge between our database models and API endpoints
 #Base logic for user create/update, handles password hashing
@@ -34,6 +34,31 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta(BaseUserSerializer.Meta):
         model = User
         fields = "__all__" 
+
+class StudentSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = StudentProfile
+        fields = ['user', 'student_id', 'program']
+
+    def create(self, validated_data):
+        # Extract nested user data
+        user_data = validated_data.pop('user')
+        user = User.objects.create_user(**user_data)
+        student = StudentProfile.objects.create(user=user, **validated_data)
+        return student
+
+class AdminDetailsSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = AdminProfile
+        fields = ['user', 'department', 'position']
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user = User.objects.create_user(**user_data)
+        admin = AdminProfile.objects.create(user=user, **validated_data)
+        return admin
 
 #Authentication (login token generation)
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

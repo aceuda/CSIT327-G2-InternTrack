@@ -1,5 +1,5 @@
 
-
+import uuid
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.db import models
 
@@ -19,7 +19,7 @@ class UserRoles(models.TextChoices):
     Create/Modify user roles here
     Add role in the same format (CUSTOM_ROLE = 'custom_role', 'Custom Role')
     """
-    ADMIN = 'admin', 'Admin'
+    ADMIN = 'supervisor', 'Admin'
     STUDENT = 'student', 'Student'
 
 #Handles how users are created, both normal users and superusers.
@@ -33,14 +33,14 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, password=None, **extra_fields):
-        extra_fields.setdefault("role", UserRoles.ADMIN)
+        extra_fields.setdefault("user_type", UserRoles.ADMIN)
         return self.create_user(username, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birthdate = models.DateField(null=False)
-    year_level = models.IntegerField(null=False)
+    #year_level = models.IntegerField(null=False)
     email = models.CharField(max_length=100)
     user_type = models.CharField(choices=UserRoles, default=UserRoles.STUDENT)
     username = models.CharField(unique=True)
@@ -51,6 +51,39 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
     
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
+    full_name = models.CharField(max_length=150, blank=True) 
+    year_level = models.IntegerField(null=False)
+    program = models.CharField(max_length=100, null=False)
+    student_id = models.CharField(max_length=12, null=False, unique=True)
+    # New DB field
+
+    def save(self, *args, **kwargs):
+        self.full_name = f"{self.user.first_name} {self.user.last_name}"
+        super().save(*args, **kwargs)
+
+class AdminProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
+    full_name = models.CharField(max_length=150, blank=True) 
+    department = models.CharField(max_length=100)
+    position = models.CharField(max_length=100)
+    employee_id = models.CharField(max_length=20, unique=True, editable=False)
+
+    
+    def save(self, *args, **kwargs):
+        if not self.employee_id:
+            raw_id = uuid.uuid4().hex[:6].upper()
+            self.employee_id = f"ADM-{raw_id}"
+        else:
+            # Normalize manually entered ID
+            cleaned = self.employee_id.replace(" ", "").upper()
+            if not cleaned.startswith("ADM-"):
+                cleaned = f"ADM-{cleaned}"
+            self.employee_id = cleaned
+
+        self.full_name = f"{self.user.first_name} {self.user.last_name}"
+        super().save(*args, **kwargs)
 
 class BaseUserManager(models.Manager):
     @classmethod

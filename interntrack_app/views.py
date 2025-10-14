@@ -3,121 +3,220 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from interntrack_app.models import AdminProfile, StudentProfile
 from interntrack_app.serializers import BaseUserSerializer, CustomTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework import status, renderers
+from django.utils.decorators import method_decorator
+
+from interntrack_app.utils import normalize_admin_data, normalize_student_data
+
 
 #Creates & authenticates users via HTML forms
 #Handles the logic (HTML forms or API requests)
 User = get_user_model()
 
 # LOGIN(Handles login)
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    renderer_classes = [renderers.TemplateHTMLRenderer, renderers.JSONRenderer]
+    template_name = 'login.html'
 
+    def get(self, request):
+        # Render login page
+        return Response({}, template_name=self.template_name)
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        # Validate input
         if not username or not password:
             messages.error(request, "Please enter both username and password")
-            return render(request, 'interntrack_app/login.html')
+            return Response({}, template_name=self.template_name, status=status.HTTP_400_BAD_REQUEST)
 
+        # Authenticate user
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
-            print("✅ User logged in:", user.username)
-            login(request, user)
-            messages.success(request, "Welcome back! Successfully logged in")
-            return redirect('dashboard')
-        else:
-            messages.error(request, "Invalid credentials")
-            return render(request, 'login.html')
+            login(request, user)  # ✅ Logs the user in (session created)
+            messages.success(request, f"Welcome back, {user.username}!")
 
-    return render(request, 'login.html')
+            # ✅ Return a proper HTTP redirect (so session persists)
+            response = redirect('dashboard')
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            return response
 
+        # Invalid credentials
+        messages.error(request, "Invalid credentials")
+        return Response({}, template_name=self.template_name, status=status.HTTP_401_UNAUTHORIZED)
 
-# REGISTER
-# def register_view(request):
-#     if request.method == "POST":
-#         username = request.POST.get("username")
-#         email = request.POST.get("username")
-#         password1 = request.POST.get("password1")
-#         password2 = request.POST.get("password2")
+class AdminRegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+    renderer_classes = [renderers.TemplateHTMLRenderer, renderers.JSONRenderer]
+    template_name = 'admin_register.html'
 
-#         if password1 != password2:
-#             messages.error(request, "Passwords do not match")
-#             return redirect("register")
+    def get(self, request):
+        """Render admin registration page for browser users."""
+        return Response({}, template_name=self.template_name)
 
-#         if User.objects.filter(username=username).exists():
-#             messages.error(request, "Username already taken")
-#             return redirect("register")
-
-#         if User.objects.filter(email=email).exists():
-#             messages.error(request, "Email already registered")
-#             return redirect("register")
-
-#         # Create user
-#         User.objects.create_user(username=username, email=email, password=password1)
-#         messages.success(request, "Account created successfully! Please log in.")
-#         return redirect("login")
-
-#     return render(request, "register.html")
-#Handle User Registration
-def register_view(request):
-    if request.method == "POST":
-        data = request.POST
-        username = data.get("username")  
+    def post(self, request):
+        data = request.data
+        username = data.get("username")
         email = data.get("email")
         password1 = data.get("password1")
         password2 = data.get("password2")
 
+        # Password check
         if password1 != password2:
-            messages.error(request, "Passwords do not match")
-            return redirect("register")
+            return Response(
+                {"error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
+        
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long!')
+            return render(request, 'admin_register.html')
 
+        # Username and email checks
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken")
-            return redirect("register")
+            return Response(
+                {"error": "Username already taken"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
 
         if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered")
-            return redirect("register")
+            return Response(
+                {"error": "Email already registered"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
 
-        # Create user using your custom manager
-        User.objects.create_user(
+        # Create the user
+        user = User.objects.create_user(
             username=username,
-            email = email,
+            email=email,
             password=password1,
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             birthdate=data.get("birthdate"),
-            year_level=data.get("year_level"),
-            user_type="student"  # default role
+            user_type="admin"
         )
 
-        messages.success(request, "Account created successfully! Please log in.")
+        # Create AdminProfile
+        admin_data = normalize_admin_data(data)
+        AdminProfile.objects.create(
+            user=user,
+            department=admin_data.get("department"),
+            position=admin_data.get("position"),
+            employee_id=admin_data.get("employee_id")
+        )
+
+        # Redirect browser, or respond JSON
+        if request.accepted_renderer.format == 'html':
+            return redirect("login")
+
+        return Response(
+            {"message": "Admin account created successfully! Please log in."},
+            status=status.HTTP_201_CREATED
+        )
+
+
+#Handle User Registration
+class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+    renderer_classes = [renderers.TemplateHTMLRenderer, renderers.JSONRenderer]
+    template_name = 'register.html'
+
+    def get(self, request):
+        """Render the registration form for browsers."""
+        return Response({}, template_name=self.template_name)
+
+    def post(self, request):
+        data = request.data
+        username = data.get("username")
+        email = data.get("email")
+        password1 = data.get("password1")
+        password2 = data.get("password2")
+
+        # Password check
+        if password1 != password2:
+            return Response(
+                {"error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
+        
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long!')
+            return render(request, 'register.html')
+
+        # Username and email checks
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": "Username already taken"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error": "Email already registered"},
+                status=status.HTTP_400_BAD_REQUEST,
+                template_name=self.template_name
+            )
+
+        # Create the user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1,
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
+            birthdate=data.get("birthdate"),
+            user_type="student"
+        )
+
+        # Normalize and create StudentProfile
+        student_data = normalize_student_data(data)
+        StudentProfile.objects.create(
+            user=user,
+            year_level=student_data.get("year_level"),
+            program=student_data.get("program"),
+            student_id=student_data.get("student_id")
+        )
+
+        # Respond with success message
+        Response(
+            {"message": "Account created successfully! Please log in."},
+            status=status.HTTP_201_CREATED,
+            template_name=self.template_name
+        )
+        
         return redirect("login")
 
-    return render(request, "register.html")
 
+@method_decorator(login_required, name='dispatch')
+class DashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = [renderers.TemplateHTMLRenderer]
 
-# DASHBOARD (protected)
-# @login_required
-# def dashboard_view(request):
-#     #print("Logged in user:", request.user)  # ✅ This will show in your terminal
-#     return render(request, "dashboard.html", {
-#         "user": request.user
-#     })
-#Diplay the dashboard after login
-@login_required
-def dashboard_view(request):
-    user = request.user
+    def get(self, request):
+        user = request.user
 
-    if user.user_type == 'admin':
-        # Redirect to admin dashboard or render a different template
-        return render(request, "admin_dashboard.html", {"user": user})
-    
-    # Default student dashboard
-    return render(request, "dashboard.html", {"user": user})
+        # Admin Dashboard
+        if user.user_type == 'admin':
+            return Response({"user": user}, template_name="admin_dashboard.html")
+        
+        # Default Student Dashboard
+        return Response({"user": user}, template_name="dashboard.html")
 
 
 
@@ -125,7 +224,7 @@ def dashboard_view(request):
 def logout_view(request):
     logout(request)
     return render(request, "logout.html")
-    return redirect("login")
+    #return redirect("login")
 
 User = get_user_model()
 #Provides full CRUD API for User
