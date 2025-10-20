@@ -2,6 +2,9 @@
 import uuid
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.db import models
+from datetime import datetime, timedelta
+from django.utils import timezone
+
 
 #Interact with the database (create/authenticate users)
 #Model for tracking intern progress
@@ -12,7 +15,7 @@ class Intern(models.Model):
 
     def __str__(self):
         return self.name
-
+    
 #Role options
 class UserRoles(models.TextChoices):
     """
@@ -84,6 +87,30 @@ class AdminProfile(models.Model):
 
         self.full_name = f"{self.user.first_name} {self.user.last_name}"
         super().save(*args, **kwargs)
+
+class Attendance(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.localdate)  # Use localdate for just date
+    time_in = models.TimeField(null=True, blank=True)
+    time_out = models.TimeField(null=True, blank=True)
+    hours_rendered = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
+    def calculate_hours(self):
+        if self.time_in and self.time_out:
+            # Combine date + time into timezone-aware datetimes
+            in_dt = timezone.make_aware(datetime.combine(self.date, self.time_in), timezone.get_current_timezone())
+            out_dt = timezone.make_aware(datetime.combine(self.date, self.time_out), timezone.get_current_timezone())
+
+            # Handle if time_out is past midnight (next day)
+            if out_dt < in_dt:
+                out_dt += timedelta(days=1)
+
+            delta = out_dt - in_dt
+            self.hours_rendered = round(delta.total_seconds() / 3600, 2)
+            self.save()
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.date}"
 
 class BaseUserManager(models.Manager):
     @classmethod
