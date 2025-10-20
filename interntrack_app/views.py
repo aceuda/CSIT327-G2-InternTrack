@@ -15,6 +15,7 @@ from rest_framework import status, renderers
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from datetime import datetime, timedelta
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
 
@@ -222,6 +223,7 @@ class DashboardView(APIView):
 
 
 class AttendanceAPIView(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [renderers.TemplateHTMLRenderer, renderers.JSONRenderer]
     template_name = 'attendance.html'
@@ -274,6 +276,7 @@ class AttendanceAPIView(APIView):
             "today": today,
             "message": message
         }, template_name=self.template_name)
+    
 # LOGOUT
 def logout_view(request):
     logout(request)
