@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from interntrack_app.models import AdminProfile, StudentProfile
+from interntrack_app.models import AdminProfile, Attendance, StudentProfile
 from interntrack_app.serializers import BaseUserSerializer, CustomTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework import status, renderers
 from django.utils.decorators import method_decorator
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
 
@@ -219,7 +221,59 @@ class DashboardView(APIView):
         return Response({"user": user}, template_name="dashboard.html")
 
 
+class AttendanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = [renderers.TemplateHTMLRenderer, renderers.JSONRenderer]
+    template_name = 'attendance.html'
 
+    def get(self, request):
+        """Render the attendance page with today's record."""
+        try:
+            student = StudentProfile.objects.get(user=request.user)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student profile not found"}, template_name=self.template_name)
+
+        today = timezone.localdate()
+        attendance = Attendance.objects.filter(student=student, date=today).first()
+
+        return Response({
+            "attendance": attendance,
+            "today": today
+        }, template_name=self.template_name)
+
+    def post(self, request):
+        """Handle Time In / Time Out button clicks."""
+        try:
+            student = StudentProfile.objects.get(user=request.user)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student profile not found"}, template_name=self.template_name)
+
+        today = timezone.localdate()
+        now = timezone.localtime()
+
+        attendance, _ = Attendance.objects.get_or_create(student=student, date=today)
+
+        # Handle Time In
+        if 'time_in' in request.POST and not attendance.time_in:
+            attendance.time_in = now.time()
+            attendance.save()
+            message = "✅ Time In recorded successfully."
+
+        # Handle Time Out
+        elif 'time_out' in request.POST and attendance.time_in and not attendance.time_out:
+            attendance.time_out = now.time()
+            attendance.calculate_hours()
+            attendance.save()
+            message = "✅ Time Out recorded successfully."
+
+        else:
+            message = "⚠️ You’ve already timed out for today or invalid action."
+
+        return Response({
+            "attendance": attendance,
+            "today": today,
+            "message": message
+        }, template_name=self.template_name)
 # LOGOUT
 def logout_view(request):
     logout(request)
