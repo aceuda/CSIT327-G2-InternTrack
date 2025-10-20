@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align:center; margin-top:50px;">
+    <h2>Attendance Tracker</h2>
+    <p><strong>Date:</strong> {{ today }}</p>
+
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    {% if attendance %}
+        <p><strong>Time In:</strong> {{ attendance.time_in|default:"—" }}</p>
+        <p><strong>Time Out:</strong> {{ attendance.time_out|default:"—" }}</p>
+        <p><strong>Hours Rendered:</strong> {{ attendance.hours_rendered|default:"0" }} hours</p>
+    {% else %}
+        <p>No attendance record yet.</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {% if not attendance.time_in %}
+            <button type="submit" name="time_in">Time In</button>
+        {% elif not attendance.time_out %}
+            <button type="submit" name="time_out">Time Out</button>
+        {% else %}
+            <button type="button" disabled>Completed</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
