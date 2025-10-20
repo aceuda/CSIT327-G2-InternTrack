@@ -297,3 +297,44 @@ class UserViewSet(viewsets.ModelViewSet):
 #Handles API-based login via JWT
 class CustomTokenView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+#----------------------------------------------------------------------
+@login_required
+def attendance_log_view(request):
+    return render(request, 'attendance.html')
+
+@login_required
+def company_details_view(request):
+    return render(request, 'company_details.html')
+
+@login_required
+def progress_tracker_view(request):
+    return render(request, 'progress_tracker.html')
+
+@login_required
+def evaluation_results_view(request):
+    return render(request, 'evaluation_results.html')
+
+@login_required
+def profile_view(request):
+    return render(request, 'profile.html')
+
+@login_required
+def log_hours_view(request):
+    # You can expand this later; for now, just render a placeholder
+    return render(request, 'log_hours.html')
+
+@login_required
+def submit_report_view(request):
+    # For now, render a simple placeholder page
+    return render(request, 'submit_report.html')
+
+@login_required
+def download_forms_view(request):
+    # Placeholder view for download forms page
+    return render(request, 'download_forms.html')
+
+@login_required
+def contact_supervisor_view(request):
+    # You can customize this view with contact form or info later
+    return render(request, 'contact_supervisor.html')

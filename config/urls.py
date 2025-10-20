@@ -33,6 +33,14 @@ urlpatterns = [
     path('register/admin/', AdminRegisterView.as_view(), name='admin_register'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('attendance/', AttendanceAPIView.as_view(), name='attendance'),
+    path('company-details/', views.company_details_view, name='company_details'),
+    path('progress-tracker/', views.progress_tracker_view, name='progress_tracker'),
+    path('evaluation-results/', views.evaluation_results_view, name='evaluation_results'),
+    path('profile/', views.profile_view, name='profile'),
+    path('log-hours/', views.log_hours_view, name='log_hours'),
+    path('submit-report/', views.submit_report_view, name='submit_report'),
+    path('download-forms/', views.download_forms_view, name='download_forms'),
+    path('contact-supervisor/', views.contact_supervisor_view, name='contact_supervisor'),
     path('logout/', views.logout_view, name='logout'),
 
     # redirect root URL to login
