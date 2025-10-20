@@ -41,6 +41,7 @@
 <body>
   <div class="welcome">Welcome back, <strong>{{ user.username }}</strong>!</div>
   <p>Your role: {{ user.user_type }}</p>
+  <a href="{% url 'attendance' %}">Attendance Log</a>
 
   <form method="post" action="{% url 'logout' %}">
     {% csrf_token %}
