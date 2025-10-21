@@ -53,7 +53,7 @@
             </div>
             <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
                 <i data-feather="user" class="w-5 h-5"></i>
-                <a href="{% url 'profile' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+                <a href="{% url 'student-profile-page' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
             </div>
             <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
                 <i data-feather="log-out" class="w-5 h-5"></i>
@@ -78,7 +78,7 @@
                     <span class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="w-8 h-8 rounded-full">
+                      <img src="{{ user.student_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full">
                     <span class="hidden md:block">{{ user.username }}</span>
                     <i data-feather="chevron-down" class="hidden md:block"></i>
                 </div>
@@ -86,7 +86,7 @@
         </header>
 
         <main class="p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Welcome back, {{ user.student_profile.full_name |default:user.username }}!</h2>
 
            <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
