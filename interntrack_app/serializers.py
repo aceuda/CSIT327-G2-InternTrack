@@ -47,6 +47,14 @@ class StudentSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**user_data)
         student = StudentProfile.objects.create(user=user, **validated_data)
         return student
+    
+class StudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image']
+        read_only_fields = ['full_name']
+
+
 
 class AdminDetailsSerializer(serializers.ModelSerializer):
     user = UserSerializer()
