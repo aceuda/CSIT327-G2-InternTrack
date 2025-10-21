@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 30px;
+    }
+    .container {
+      background: white;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    img {
+      display: block;
+      margin: 10px auto;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Admin Profile</h2>
+    <img id="profileImage" src="" alt="Profile Image">
+    <form id="profileForm">
+      <label>Full Name</label>
+      <input type="text" id="full_name" name="full_name" readonly>
+
+      <label>Student ID</label>
+      <input type="text" id="student_id" name="student_id">
+
+      <label>Department</label>
+      <input type="text" id="department" name="department">
+
+      <label>Position</label>
+      <input type = "text" id="position" name="position">
+
+      <label>Profile Picture</label>
+      <input type="file" id="profile_image" name="profile_image">
+
+      <button type="submit">Update Profile</button>
+    </form>
+  </div>
+
+  <script>
+    // CSRF token helper
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    const apiUrl = '/admin_profile/';
+
+    // Load profile data
+    async function loadProfile() {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      document.getElementById('full_name').value = data.full_name || '';
+      document.getElementById('department').value = data.department || '';
+      document.getElementById('position').value = data.position || '';
+      document.getElementById('employee_id').value = data.employee_id || '';
+      if (data.profile_image) {
+        document.getElementById('profileImage').src = data.profile_image;
+      } else {
+        document.getElementById('profileImage').src = 'https://via.placeholder.com/120';
+      }
+    }
+
+    // Submit profile update
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('department', document.getElementById('department').value);
+      formData.append('position', document.getElementById('position').value);
+      formData.append('employee_id', document.getElementById('employee_id').value);
+
+      const imageFile = document.getElementById('profile_image').files[0];
+      if (imageFile) formData.append('profile_image', imageFile);
+
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Profile updated successfully!');
+        loadProfile();
+      } else {
+        alert('Error updating profile.');
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
