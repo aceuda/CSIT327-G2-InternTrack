@@ -60,6 +60,7 @@ class StudentProfile(models.Model):
     year_level = models.IntegerField(null=False)
     program = models.CharField(max_length=100, null=False)
     student_id = models.CharField(max_length=12, null=False, unique=True)
+    profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
     # New DB field
 
     def save(self, *args, **kwargs):
@@ -72,6 +73,7 @@ class AdminProfile(models.Model):
     department = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     employee_id = models.CharField(max_length=20, unique=True, editable=False)
+    profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
 
     
     def save(self, *args, **kwargs):
