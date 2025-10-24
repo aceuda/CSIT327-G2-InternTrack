@@ -19,8 +19,8 @@ from datetime import datetime, timedelta
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.views.decorators.csrf import csrf_exempt
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
-
-
+from .models import StudentProfile, Attendance, Evaluation  # adjust model imports as needed
+from django.db import models
 
 #Creates & authenticates users via HTML forms
 #Handles the logic (HTML forms or API requests)
@@ -207,7 +207,6 @@ class RegisterView(APIView):
         
         return redirect("login")
 
-
 @method_decorator(login_required, name='dispatch')
 class DashboardView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -217,12 +216,77 @@ class DashboardView(APIView):
         user = request.user
 
         # Admin Dashboard
-        if user.user_type == 'admin':
+        if getattr(user, "user_type", None) == 'admin':
             return Response({"user": user}, template_name="admin_dashboard.html")
-        
-        # Default Student Dashboard
-        return Response({"user": user}, template_name="dashboard.html")
 
+        # Student Dashboard
+        profile = StudentProfile.objects.filter(user=user).first()
+
+        recent_logs = []
+        if profile:
+            attendance_qs = Attendance.objects.filter(student=profile).order_by('-date')[:5]
+            for log in attendance_qs:
+                if not log.time_in:
+                    status = 'Absent'
+                elif not log.time_out:
+                    status = 'Pending'
+                else:
+                    status = 'Present'
+                recent_logs.append({
+                    "date": log.date,
+                    "hours": log.hours_rendered,
+                    "status": status,
+                })
+
+        # Attendance rate
+        if profile:
+            total_days = Attendance.objects.filter(student=profile).count()
+            present_days = Attendance.objects.filter(
+                student=profile,
+                time_in__isnull=False,
+                time_out__isnull=False
+            ).count()
+        else:
+            total_days = present_days = 0
+
+        attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+
+        # OJT hours
+        if profile:
+            hours_agg = Attendance.objects.filter(student=profile).aggregate(total=models.Sum('hours_rendered'))
+            completed_hours = hours_agg.get('total') or 0
+        else:
+            completed_hours = 0
+
+        total_hours = 400
+        progress_percentage = (completed_hours / total_hours * 100) if total_hours > 0 else 0
+
+        # Evaluation
+        evaluation = None
+        overall_score = None
+        evaluation_remarks = None
+        if profile:
+            evaluation = Evaluation.objects.filter(student=profile).order_by('-date_evaluated').first()
+            if evaluation:
+                overall_score = getattr(evaluation, 'score', None)
+                evaluation_remarks = getattr(evaluation, 'remarks', '')
+
+        evaluation_status = "Completed" if evaluation else "Pending"
+
+        context = {
+            "user": user,
+            "student_profile": profile,
+            "attendance_rate": round(attendance_rate, 1),
+            "recent_logs": recent_logs,
+            "completed_hours": int(completed_hours),
+            "total_hours": total_hours,
+            "progress_percentage": int(progress_percentage),
+            "evaluation_status": evaluation_status,
+            "overall_score": overall_score,
+            "evaluation_remarks": evaluation_remarks,
+        }
+
+        return Response(context, template_name="dashboard.html")
 
 class AttendanceAPIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
