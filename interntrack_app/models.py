@@ -61,6 +61,7 @@ class StudentProfile(models.Model):
     program = models.CharField(max_length=100, null=False)
     student_id = models.CharField(max_length=12, null=False, unique=True)
     profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
+    completed_hours = models.PositiveIntegerField(default=0)
     # New DB field
 
     def save(self, *args, **kwargs):
@@ -113,6 +114,16 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student.full_name} - {self.date}"
+
+#Evaluation
+class Evaluation(models.Model):
+    student = models.ForeignKey('StudentProfile', on_delete=models.CASCADE)
+    score = models.FloatField(default=0)
+    remarks = models.TextField(blank=True, null=True)
+    date_evaluated = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.score}"
 
 class BaseUserManager(models.Manager):
     @classmethod

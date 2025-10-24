@@ -1,8 +1,38 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluation Results | InternTrack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-6xl mx-auto p-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold text-gray-800">Evaluation Results</h1>
+      <a href="/dashboard" class="text-blue-600 hover:underline">← Back to Dashboard</a>
+    </div>
 
-{% block content %}
-<div class="p-8">
-  <h1 class="text-2xl font-bold text-gray-800">Evaluation Results</h1>
-  <p class="mt-4 text-gray-600">This is a placeholder page for Evaluation Results.</p>
-</div>
-{% endblock %}
+    <!-- Evaluation Summary -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white shadow rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Performance Summary</h2>
+        <p><strong>Technical Skills:</strong> Excellent (92%)</p>
+        <p><strong>Communication:</strong> Very Good (88%)</p>
+        <p><strong>Attendance:</strong> Excellent (95%)</p>
+        <p><strong>Teamwork:</strong> Very Good (89%)</p>
+      </div>
+
+      <div class="bg-white shadow rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Evaluator Remarks</h2>
+        <p class="text-gray-600">
+          The intern has shown strong dedication and technical proficiency. 
+          Demonstrates excellent teamwork and adaptability. 
+          A valuable contributor to the project team.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
