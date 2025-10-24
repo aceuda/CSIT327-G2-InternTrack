@@ -239,10 +239,12 @@ class AttendanceAPIView(APIView):
 
         today = timezone.localdate()
         attendance = Attendance.objects.filter(student=student, date=today).first()
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
 
         return Response({
             "attendance": attendance,
-            "today": today
+            "today": today,
+            "recent_logs": recent_logs,  # ✅ Added this line
         }, template_name=self.template_name)
 
     def post(self, request):
@@ -273,11 +275,15 @@ class AttendanceAPIView(APIView):
         else:
             message = "⚠️ You’ve already timed out for today or invalid action."
 
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
+
         return Response({
             "attendance": attendance,
             "today": today,
+            "recent_logs": recent_logs,  # ✅ Added this line
             "message": message
         }, template_name=self.template_name)
+
     
 #Profile Management
 @method_decorator(csrf_exempt, name='dispatch')
