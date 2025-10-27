@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from interntrack_app.models import AdminProfile, Attendance, StudentProfile
-from interntrack_app.serializers import BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer
+from interntrack_app.serializers import AdminProfileSerializer, BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
@@ -216,8 +216,13 @@ class DashboardView(APIView):
         user = request.user
 
         # Admin Dashboard
+        # Admin Dashboard
         if getattr(user, "user_type", None) == 'admin':
-            return Response({"user": user}, template_name="admin_dashboard.html")
+            admin_profile = getattr(user, "admin_profile", None)
+            return Response(
+                {"user": user, "admin_profile": admin_profile},
+                template_name="admin_dashboard.html"
+            )
 
         # Student Dashboard
         profile = StudentProfile.objects.filter(user=user).first()
@@ -357,7 +362,6 @@ class StudentProfileView(APIView):
     """
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-     
 
     def get(self, request):
         """Retrieve the current user's profile"""
@@ -390,7 +394,8 @@ class StudentProfileView(APIView):
         profile = get_object_or_404(StudentProfile, user=request.user)
         profile.delete()
         return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
-    
+
+
 def profile_page(request):
     """
     Render the profile.html template.
@@ -399,6 +404,53 @@ def profile_page(request):
     return render(request, 'profile.html')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class AdminProfileView(APIView):
+    """
+    APIView for managing the logged-in admin's profile (CRUD).
+    """
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve the current user's profile"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        serializer = AdminProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Create a new profile (only if user doesn’t have one yet)"""
+        if hasattr(request.user, 'admin_profile'):
+            return Response({'detail': 'Profile already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AdminProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        """Update current user's profile (partial updates allowed)"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        serializer = AdminProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            print("Incoming data:", request.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """Delete current user's profile"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        profile.delete()
+        return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    
+def admin_profile_page(request):
+    """
+    Render the admin_profile.html template.
+    This page will interact with AdminProfileView using fetch() or AJAX.
+    """
+    return render(request, 'admin_profile.html')
 
 # LOGOUT
 def logout_view(request):
