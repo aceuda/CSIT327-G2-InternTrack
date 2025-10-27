@@ -70,15 +70,9 @@
   <!-- Main Content -->
   <div class="flex-1 overflow-auto">
     <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <div class="relative w-64">
-        <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <i data-feather="search" class="absolute left-3 top-2.5 text-gray-400"></i>
-      </div>
+      <div></div>
       <div class="flex items-center space-x-4">
-        <div class="relative">
-          <i data-feather="bell" class="text-gray-600"></i>
-          <span class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></span>
-        </div>
+        <div></div>
         <div class="flex items-center space-x-2">
           {% if user.student_profile.profile_image %}
             <img src="{{ user.student_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full">
