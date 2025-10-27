@@ -57,6 +57,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MIDDLEWARE += ['interntrack_app.middleware.CloseDBConnectionMiddleware']
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
