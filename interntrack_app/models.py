@@ -49,6 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
