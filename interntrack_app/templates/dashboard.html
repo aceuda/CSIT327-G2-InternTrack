@@ -70,19 +70,25 @@
         <div class="flex items-center space-x-4">
           <div></div>
           <div class="flex items-center space-x-2">
-            {% if student_profile and student_profile.profile_image %}
-              <img src="{{ student_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full">
-            {% else %}
-              <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="w-8 h-8 rounded-full">
-            {% endif %}
-            <span class="hidden md:block">{{ user.username }}</span>
+            <a href="{% url 'student-profile-page' %}" class="block">
+             {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% else %}
+            <img src="{% static 'images/default_profile.png' %}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% endif %}
+            </a>
+            <span></span>
           </div>
         </div>
       </header>
 
       <main class="p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">
-          Welcome back, {{ student_profile.full_name|default:user.username }}!
+          Welcome, {{ student_profile.full_name|default:user.username }}!
         </h2>
 
         <!-- Progress Tracker (live) -->
