@@ -110,13 +110,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #         "PORT": os.environ.get('DB_PORT'),
 #     }
 # }
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL'),
+#         conn_max_age=600,  # keeps connection alive
+#         ssl_require=True,  # ensures SSL is used
+#     )
+# }
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600,  # keeps connection alive
-        ssl_require=True,  # ensures SSL is used
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=True,
     )
 }
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
