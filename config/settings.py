@@ -120,12 +120,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=os.environ['DATABASE_URL'],  # use the env var directly
         conn_max_age=600,
         ssl_require=True,
     )
 }
-
 
 
 # Password validation
