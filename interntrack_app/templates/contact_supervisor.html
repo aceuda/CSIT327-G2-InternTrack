@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Supervisor | InternTrack</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .sidebar-gradient { background: linear-gradient(180deg, #003366 0%, #0059b3 100%); }
+    .card-shadow { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 h-full">
+  <div class="flex h-screen overflow-hidden">
+<!-- Sidebar (same as your original) -->
+    <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+      <div class="p-4 flex items-center justify-between border-b border-blue-800">
+        <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+        <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
+      </div>
+      <nav class="mt-6">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="home" class="w-5 h-5"></i>
+          <!-- ✅ Redirects to dashboard -->
+          <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="calendar" class="w-5 h-5"></i>
+          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="briefcase" class="w-5 h-5"></i>
+          <a href="{% url 'company_details' %}" class="ml-3 hidden md:hidden lg:block">Company Details</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="trending-up" class="w-5 h-5"></i>
+          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="check-circle" class="w-5 h-5"></i>
+          <a href="{% url 'evaluation_results' %}" class="ml-3 hidden md:hidden lg:block">Evaluation Results</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="user" class="w-5 h-5"></i>
+          <a href="{% url 'student-profile-page' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+        </div>
+        <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="log-out" class="w-5 h-5"></i>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+          </form>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div></div>
+        <div class="flex items-center space-x-2">
+          {% if student_profile and student_profile.profile_image %}
+            <a href="{% url 'student-profile-page' %}">
+              <img src="{{ student_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full hover:opacity-80 transition">
+            </a>
+          {% else %}
+            <a href="{% url 'student-profile-page' %}">
+              <img src="{% static 'images/default_profile.png' %}" alt="Profile" class="w-8 h-8 rounded-full hover:opacity-80 transition">
+            </a>
+          {% endif %}
+          <span></span>
+        </div>
+      </header>
+
+      <main class="p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Contact Your Supervisor</h2>
+
+        <div class="bg-white p-6 rounded-lg card-shadow max-w-lg mx-auto">
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+              <input type="text" id="subject" name="subject" placeholder="e.g., Progress Update" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+              <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+              <textarea id="message" name="message" rows="5" placeholder="Write your message to your supervisor..." class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="{% static 'js/script.js' %}"></script>
+  <script>feather.replace();</script>
+</body>
+</html>
