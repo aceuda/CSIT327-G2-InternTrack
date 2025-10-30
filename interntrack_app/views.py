@@ -50,7 +50,7 @@ class LoginView(APIView):
 
         if user is not None:
             login(request, user)  # ✅ Logs the user in (session created)
-            messages.success(request, f"Welcome back, {user.username}!")
+            messages.success(request, f"Welcome back")
 
             # ✅ Return a proper HTTP redirect (so session persists)
             response = redirect('dashboard')
