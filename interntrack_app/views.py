@@ -482,15 +482,36 @@ def attendance_log_view(request):
 
 @login_required
 def company_details_view(request):
-    return render(request, 'company_details.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'company_details.html', {
+        "student_profile": student_profile,  # ✅ Pass this to template
+    })
 
 @login_required
 def progress_tracker_view(request):
-    return render(request, 'progress_tracker.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'progress_tracker.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def evaluation_results_view(request):
-    return render(request, 'evaluation_results.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'evaluation_results.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def profile_view(request):
@@ -503,15 +524,33 @@ def log_hours_view(request):
 
 @login_required
 def submit_report_view(request):
-    # For now, render a simple placeholder page
-    return render(request, 'submit_report.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'submit_report.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def download_forms_view(request):
-    # Placeholder view for download forms page
-    return render(request, 'download_forms.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'download_forms.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def contact_supervisor_view(request):
-    # You can customize this view with contact form or info later
-    return render(request, 'contact_supervisor.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'contact_supervisor.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
