@@ -89,9 +89,7 @@
                 <i data-feather="search" class="absolute left-3 top-2.5 text-gray-400"></i>
             </div>
             <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <i data-feather="bell" class="text-gray-600"></i>
-                    <span class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></span>
+                <div>
                 </div>
                 <div class="flex items-center space-x-2">
                      {% if admin_profile and admin_profile.profile_image %}
@@ -99,8 +97,7 @@
                     {% else %}
                     <img src="https://ui-avatars.com/api/?name={{ user.username }}" alt="Profile" class="w-8 h-8 rounded-full">
                     {% endif %}
-                    <span class="hidden md:block">{{ user.username }}</span>
-                    <i data-feather="chevron-down" class="hidden md:block"></i>
+                    <span></span>
                 </div>
             </div>
         </header>
