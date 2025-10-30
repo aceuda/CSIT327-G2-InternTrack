@@ -311,6 +311,7 @@ class AttendanceAPIView(APIView):
         recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
 
         return Response({
+            "student_profile": student, 
             "attendance": attendance,
             "today": today,
             "recent_logs": recent_logs,  # ✅ Added this line
@@ -347,6 +348,7 @@ class AttendanceAPIView(APIView):
         recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
 
         return Response({
+            "student_profile": student, 
             "attendance": attendance,
             "today": today,
             "recent_logs": recent_logs,  # ✅ Added this line
