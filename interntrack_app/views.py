@@ -554,3 +554,27 @@ def contact_supervisor_view(request):
     return render(request, 'contact_supervisor.html', {
         "student_profile": student_profile,  # ✅ Pass profile to template
     })
+
+@login_required
+def manage_interns_view(request):
+    return render(request, 'manage_interns.html')
+
+@login_required
+def manage_companies_view(request):
+    return render(request, 'manage_companies.html')
+
+@login_required
+def attendance_records_view(request):
+    return render(request, 'attendance_records.html')
+
+@login_required
+def evaluations_view(request):
+    return render(request, 'evaluations.html')
+    
+@login_required
+def reports_view(request):
+    return render(request, 'reports.html')
+
+@login_required
+def settings_view(request):
+    return render(request, 'settings.html')
