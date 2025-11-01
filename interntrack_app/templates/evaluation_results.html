@@ -1,8 +1,114 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
 
-{% block content %}
-<div class="p-8">
-  <h1 class="text-2xl font-bold text-gray-800">Evaluation Results</h1>
-  <p class="mt-4 text-gray-600">This is a placeholder page for Evaluation Results.</p>
-</div>
-{% endblock %}
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternTrack | Evaluation Results</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .sidebar-gradient {
+      background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 h-full">
+  <div class="flex h-screen overflow-hidden">
+    <!-- ✅ Sidebar -->
+    <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+      <div class="p-4 flex items-center justify-between border-b border-blue-800">
+        <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+        <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
+      </div>
+      <nav class="mt-6">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="home" class="w-5 h-5"></i>
+          <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="calendar" class="w-5 h-5"></i>
+          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="briefcase" class="w-5 h-5"></i>
+          <a href="{% url 'company_details' %}" class="ml-3 hidden md:hidden lg:block">Company Details</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="trending-up" class="w-5 h-5"></i>
+          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white bg-blue-700">
+          <i data-feather="check-circle" class="w-5 h-5"></i>
+          <a href="{% url 'evaluation_results' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Evaluation Results</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="user" class="w-5 h-5"></i>
+          <a href="{% url 'student-profile-page' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+        </div>
+        <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="log-out" class="w-5 h-5"></i>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+          </form>
+        </div>
+      </nav>
+    </div>
+
+    <!-- ✅ Main Content -->
+    <div class="flex-1 overflow-auto">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div></div>
+        <div class="flex items-center space-x-2">
+          <a href="{% url 'student-profile-page' %}" class="block">
+             {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% else %}
+            <img src="{% static 'images/default_profile.png' %}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% endif %}
+            </a>
+          <span></span>
+        </div>
+      </header>
+
+      <!-- ✅ Evaluation Results Content -->
+      <main class="p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Evaluation Results</h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-lg p-6 card-shadow">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Performance Summary</h3>
+            <p><strong>Technical Skills:</strong> {{ evaluation.technical_skills|default:"Excellent (92%)" }}</p>
+            <p><strong>Communication:</strong> {{ evaluation.communication|default:"Very Good (88%)" }}</p>
+            <p><strong>Attendance:</strong> {{ evaluation.attendance|default:"Excellent (95%)" }}</p>
+            <p><strong>Teamwork:</strong> {{ evaluation.teamwork|default:"Very Good (89%)" }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 card-shadow">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Evaluator Remarks</h3>
+            <p class="text-gray-600">
+              {{ evaluation.remarks|default:"The intern has shown strong dedication and technical proficiency. Demonstrates excellent teamwork and adaptability. A valuable contributor to the project team." }}
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/script.js' %}"></script>
+  <script>feather.replace();</script>
+</body>
+</html>

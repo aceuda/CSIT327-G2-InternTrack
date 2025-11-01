@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-fyoo**=9t!!avnjxwqh$0xfoeopz&s*!l2v999td0q^biyb2f0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -56,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+MIDDLEWARE += ['interntrack_app.middleware.CloseDBConnectionMiddleware']
 
 ROOT_URLCONF = 'config.urls'
 
@@ -108,13 +110,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #         "PORT": os.environ.get('DB_PORT'),
 #     }
 # }
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL'),
+#         conn_max_age=600,  # keeps connection alive
+#         ssl_require=True,  # ensures SSL is used
+#     )
+# }
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600,  # keeps connection alive
-        ssl_require=True,  # ensures SSL is used
+        default=os.environ['DATABASE_URL'],  # use the env var directly
+        conn_max_age=600,
+        ssl_require=True,
     )
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -151,6 +162,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Media files (user-uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

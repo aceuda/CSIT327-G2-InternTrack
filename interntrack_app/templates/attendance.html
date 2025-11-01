@@ -1,30 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
 
-{% block content %}
-<div style="text-align:center; margin-top:50px;">
-    <h2>Attendance Tracker</h2>
-    <p><strong>Date:</strong> {{ today }}</p>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternTrack | Attendance Tracker</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .sidebar-gradient {
+      background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
 
-    {% if message %}
-        <p style="color: green;">{{ message }}</p>
-    {% endif %}
+<body class="font-inter bg-gray-50 h-full">
+  <div class="flex h-screen overflow-hidden">
+    <!-- ✅ Sidebar (copied from dashboard.html) -->
+    <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+      <div class="p-4 flex items-center justify-between border-b border-blue-800">
+        <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+        <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
+      </div>
+      <nav class="mt-6">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="home" class="w-5 h-5"></i>
+          <!-- ✅ Redirects to dashboard -->
+          <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white active-link bg-blue-700">
+          <i data-feather="calendar" class="w-5 h-5"></i>
+          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Attendance Log</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="briefcase" class="w-5 h-5"></i>
+          <a href="{% url 'company_details' %}" class="ml-3 hidden md:hidden lg:block">Company Details</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="trending-up" class="w-5 h-5"></i>
+          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="check-circle" class="w-5 h-5"></i>
+          <a href="{% url 'evaluation_results' %}" class="ml-3 hidden md:hidden lg:block">Evaluation Results</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="user" class="w-5 h-5"></i>
+          <a href="{% url 'student-profile-page' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+        </div>
+        <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="log-out" class="w-5 h-5"></i>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+          </form>
+        </div>
+      </nav>
+    </div>
 
-    {% if attendance %}
-        <p><strong>Time In:</strong> {{ attendance.time_in|default:"—" }}</p>
-        <p><strong>Time Out:</strong> {{ attendance.time_out|default:"—" }}</p>
-        <p><strong>Hours Rendered:</strong> {{ attendance.hours_rendered|default:"0" }} hours</p>
-    {% else %}
-        <p>No attendance record yet.</p>
-    {% endif %}
+    <!-- ✅ Main Content -->
+    <div class="flex-1 overflow-auto">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div></div>
+        <div class="flex items-center space-x-2">
+          <a href="{% url 'student-profile-page' %}" class="block">
+             {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% else %}
+            <img src="{% static 'images/default_profile.png' %}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% endif %}
+            </a>
+          <span></span>
+        </div>
+      </header>
 
-    <form method="post">
-        {% csrf_token %}
-        {% if not attendance.time_in %}
-            <button type="submit" name="time_in">Time In</button>
-        {% elif not attendance.time_out %}
-            <button type="submit" name="time_out">Time Out</button>
-        {% else %}
-            <button type="button" disabled>Completed</button>
+      <!-- ✅ Attendance Page Content -->
+      <main class="p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Attendance Tracker</h2>
+
+        <div class="flex justify-end mb-4">
+          <p class="text-gray-600 font-medium">
+            Date: <span class="text-blue-600">{{ today }}</span>
+          </p>
+        </div>
+
+        {% if message %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mb-4">
+          {{ message }}
+        </div>
         {% endif %}
-    </form>
-</div>
-{% endblock %}
+
+        <!-- Attendance Card -->
+        <div class="bg-white rounded-lg p-6 card-shadow max-w-lg mx-auto mb-8">
+          {% if attendance %}
+            <div class="space-y-3">
+              <p><span class="font-semibold text-gray-700">Time In:</span> {{ attendance.time_in|default:"—" }}</p>
+              <p><span class="font-semibold text-gray-700">Time Out:</span> {{ attendance.time_out|default:"—" }}</p>
+              <p><span class="font-semibold text-gray-700">Hours Rendered:</span>
+                <span class="text-blue-600">{{ attendance.hours_rendered|default:"0" }}</span> hours
+              </p>
+            </div>
+          {% else %}
+            <p class="text-gray-500 text-center">No attendance record yet.</p>
+          {% endif %}
+        </div>
+
+        <!-- Time In / Time Out Buttons -->
+        <div class="mt-6 flex justify-center">
+          <form method="post">
+            {% csrf_token %}
+            {% if not attendance.time_in %}
+              <button type="submit" name="time_in"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                Time In
+              </button>
+            {% elif not attendance.time_out %}
+              <button type="submit" name="time_out"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                Time Out
+              </button>
+            {% else %}
+              <button type="button" disabled
+                class="px-6 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+                Completed
+              </button>
+            {% endif %}
+          </form>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="mt-10 bg-white rounded-lg p-6 card-shadow">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Attendance Logs</h3>
+          {% if recent_logs %}
+          <div class="overflow-x-auto">
+            <table class="w-full border border-gray-200 rounded-lg">
+              <thead class="bg-blue-600 text-white">
+                <tr>
+                  <th class="py-2 px-4 text-left">Date</th>
+                  <th class="py-2 px-4 text-left">Time In</th>
+                  <th class="py-2 px-4 text-left">Time Out</th>
+                  <th class="py-2 px-4 text-left">Hours Rendered</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                {% for log in recent_logs %}
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2 px-4">{{ log.date }}</td>
+                  <td class="py-2 px-4">{{ log.time_in|default:"—" }}</td>
+                  <td class="py-2 px-4">{{ log.time_out|default:"—" }}</td>
+                  <td class="py-2 px-4 text-blue-600 font-medium">{{ log.hours_rendered|default:"0" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <p class="text-gray-500">No attendance logs available.</p>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/script.js' %}"></script>
+  <script>feather.replace();</script>
+</body>
+</html>

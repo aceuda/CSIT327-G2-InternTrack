@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Download Forms | InternTrack</title>
+  <title>Contact Supervisor | InternTrack</title>
   <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
@@ -17,7 +17,7 @@
 
 <body class="font-inter bg-gray-50 h-full">
   <div class="flex h-screen overflow-hidden">
-    <!-- ✅ Sidebar (copied from dashboard.html) -->
+<!-- Sidebar (same as your original) -->
     <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
       <div class="p-4 flex items-center justify-between border-b border-blue-800">
         <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
@@ -29,9 +29,9 @@
           <!-- ✅ Redirects to dashboard -->
           <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
         </div>
-        <div class="px-4 py-3 flex items-center text-white active-link bg-blue-700">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
           <i data-feather="calendar" class="w-5 h-5"></i>
-          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Attendance Log</a>
+          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
         </div>
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
           <i data-feather="briefcase" class="w-5 h-5"></i>
@@ -78,27 +78,25 @@
       </header>
 
       <main class="p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Download Internship Forms</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Contact Your Supervisor</h2>
 
-        <div class="bg-white p-6 rounded-lg card-shadow max-w-2xl mx-auto">
-          <ul class="space-y-4">
-            <li class="flex items-center justify-between border-b pb-3">
-              <span class="text-gray-700">Daily Time Record (DTR)</span>
-              <a href="{% static 'forms/dtr.pdf' %}" download class="text-blue-600 hover:underline">Download</a>
-            </li>
-            <li class="flex items-center justify-between border-b pb-3">
-              <span class="text-gray-700">OJT Evaluation Form</span>
-              <a href="{% static 'forms/evaluation.pdf' %}" download class="text-blue-600 hover:underline">Download</a>
-            </li>
-            <li class="flex items-center justify-between border-b pb-3">
-              <span class="text-gray-700">Attendance Sheet Template</span>
-              <a href="{% static 'forms/attendance_template.xlsx' %}" download class="text-blue-600 hover:underline">Download</a>
-            </li>
-            <li class="flex items-center justify-between">
-              <span class="text-gray-700">Final Report Format</span>
-              <a href="{% static 'forms/final_report.docx' %}" download class="text-blue-600 hover:underline">Download</a>
-            </li>
-          </ul>
+        <div class="bg-white p-6 rounded-lg card-shadow max-w-lg mx-auto">
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+              <input type="text" id="subject" name="subject" placeholder="e.g., Progress Update" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+              <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+              <textarea id="message" name="message" rows="5" placeholder="Write your message to your supervisor..." class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+              Send Message
+            </button>
+          </form>
         </div>
       </main>
     </div>

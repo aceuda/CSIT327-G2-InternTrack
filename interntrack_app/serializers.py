@@ -10,7 +10,7 @@ from .models import AdminProfile, StudentProfile, User
 class BaseUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude =  ['is_deleted', 'is_superuser', 'last_login', 'groups', 'user_permissions', 'is_active']
+        exclude =  ['is_deleted', 'is_superuser', 'last_login', 'groups', 'user_permissions', 'is_active', 'is_staff']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -47,6 +47,19 @@ class StudentSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**user_data)
         student = StudentProfile.objects.create(user=user, **validated_data)
         return student
+    
+class StudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image']
+        read_only_fields = ['full_name']
+
+class AdminProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminProfile
+        fields = ['full_name', 'department', 'position', 'employee_id', 'profile_image']
+        read_only_fields = ['full_name']
+        
 
 class AdminDetailsSerializer(serializers.ModelSerializer):
     user = UserSerializer()

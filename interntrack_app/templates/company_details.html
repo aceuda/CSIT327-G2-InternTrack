@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternTrack | Company Details</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .sidebar-gradient {
+      background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 h-full">
+  <div class="flex h-screen overflow-hidden">
+    <!-- ✅ Sidebar (same as dashboard) -->
+    <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+      <div class="p-4 flex items-center justify-between border-b border-blue-800">
+        <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+        <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
+      </div>
+      <nav class="mt-6">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="home" class="w-5 h-5"></i>
+          <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="calendar" class="w-5 h-5"></i>
+          <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white bg-blue-700">
+          <i data-feather="briefcase" class="w-5 h-5"></i>
+          <a href="{% url 'company_details' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Company Details</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="trending-up" class="w-5 h-5"></i>
+          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="check-circle" class="w-5 h-5"></i>
+          <a href="{% url 'evaluation_results' %}" class="ml-3 hidden md:hidden lg:block">Evaluation Results</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="user" class="w-5 h-5"></i>
+          <a href="{% url 'student-profile-page' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+        </div>
+        <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="log-out" class="w-5 h-5"></i>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+          </form>
+        </div>
+      </nav>
+    </div>
+
+    <!-- ✅ Main Content -->
+    <div class="flex-1 overflow-auto">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div></div>
+        <div class="flex items-center space-x-2">
+          <a href="{% url 'student-profile-page' %}" class="block">
+             {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% else %}
+            <img src="{% static 'images/default_profile.png' %}" 
+                 alt="Profile" 
+                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+             {% endif %}
+            </a>
+          <span></span>
+        </div>
+      </header>
+
+      <!-- ✅ Company Details Page Content -->
+      <main class="p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Company Details</h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-lg p-6 card-shadow">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Company Profile</h3>
+            <p><strong>Company Name:</strong> {{ company.name|default:"InternTrack" }}</p>
+            <p><strong>Industry:</strong> {{ company.industry|default:"Internship Management" }}</p>
+            <p><strong>Location:</strong> {{ company.location|default:"Cebu City, Philippines" }}</p>
+            <p><strong>Email:</strong> {{ company.email|default:"interntrack@gmail.com" }}</p>
+            <p><strong>Contact:</strong> {{ company.contact|default:"+63 912 345 6789" }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 card-shadow">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Supervisor Details</h3>
+            <p><strong>Name:</strong> {{ supervisor.name|default:"Engr. Maria Dela Cruz" }}</p>
+            <p><strong>Position:</strong> {{ supervisor.position|default:"Project Manager" }}</p>
+            <p><strong>Email:</strong> {{ supervisor.email|default:"mdelacruz@techcorp.com" }}</p>
+            <p><strong>Contact:</strong> {{ supervisor.contact|default:"+63 917 456 7890" }}</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/script.js' %}"></script>
+  <script>feather.replace();</script>
+</body>
+</html>

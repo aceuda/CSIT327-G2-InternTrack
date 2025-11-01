@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
+from urllib import request
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from interntrack_app.models import AdminProfile, Attendance, StudentProfile
-from interntrack_app.serializers import BaseUserSerializer, CustomTokenObtainPairSerializer
+from interntrack_app.serializers import AdminProfileSerializer, BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
@@ -16,9 +17,10 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 from datetime import datetime, timedelta
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-
+from django.views.decorators.csrf import csrf_exempt
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
-
+from .models import StudentProfile, Attendance, Evaluation  # adjust model imports as needed
+from django.db import models
 
 #Creates & authenticates users via HTML forms
 #Handles the logic (HTML forms or API requests)
@@ -48,7 +50,7 @@ class LoginView(APIView):
 
         if user is not None:
             login(request, user)  # ✅ Logs the user in (session created)
-            messages.success(request, f"Welcome back, {user.username}!")
+            messages.success(request, f"Welcome back")
 
             # ✅ Return a proper HTTP redirect (so session persists)
             response = redirect('dashboard')
@@ -205,7 +207,6 @@ class RegisterView(APIView):
         
         return redirect("login")
 
-
 @method_decorator(login_required, name='dispatch')
 class DashboardView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -215,12 +216,82 @@ class DashboardView(APIView):
         user = request.user
 
         # Admin Dashboard
-        if user.user_type == 'admin':
-            return Response({"user": user}, template_name="admin_dashboard.html")
-        
-        # Default Student Dashboard
-        return Response({"user": user}, template_name="dashboard.html")
+        # Admin Dashboard
+        if getattr(user, "user_type", None) == 'admin':
+            admin_profile = getattr(user, "admin_profile", None)
+            return Response(
+                {"user": user, "admin_profile": admin_profile},
+                template_name="admin_dashboard.html"
+            )
 
+        # Student Dashboard
+        profile = StudentProfile.objects.filter(user=user).first()
+
+        recent_logs = []
+        if profile:
+            attendance_qs = Attendance.objects.filter(student=profile).order_by('-date')[:5]
+            for log in attendance_qs:
+                if not log.time_in:
+                    status = 'Absent'
+                elif not log.time_out:
+                    status = 'Pending'
+                else:
+                    status = 'Present'
+                recent_logs.append({
+                    "date": log.date,
+                    "hours": log.hours_rendered,
+                    "status": status,
+                })
+
+        # Attendance rate
+        if profile:
+            total_days = Attendance.objects.filter(student=profile).count()
+            present_days = Attendance.objects.filter(
+                student=profile,
+                time_in__isnull=False,
+                time_out__isnull=False
+            ).count()
+        else:
+            total_days = present_days = 0
+
+        attendance_rate = (present_days / total_days * 100) if total_days > 0 else 0
+
+        # OJT hours
+        if profile:
+            hours_agg = Attendance.objects.filter(student=profile).aggregate(total=models.Sum('hours_rendered'))
+            completed_hours = hours_agg.get('total') or 0
+        else:
+            completed_hours = 0
+
+        total_hours = 400
+        progress_percentage = (completed_hours / total_hours * 100) if total_hours > 0 else 0
+
+        # Evaluation
+        evaluation = None
+        overall_score = None
+        evaluation_remarks = None
+        if profile:
+            evaluation = Evaluation.objects.filter(student=profile).order_by('-date_evaluated').first()
+            if evaluation:
+                overall_score = getattr(evaluation, 'score', None)
+                evaluation_remarks = getattr(evaluation, 'remarks', '')
+
+        evaluation_status = "Completed" if evaluation else "Pending"
+
+        context = {
+            "user": user,
+            "student_profile": profile,
+            "attendance_rate": round(attendance_rate, 1),
+            "recent_logs": recent_logs,
+            "completed_hours": int(completed_hours),
+            "total_hours": total_hours,
+            "progress_percentage": int(progress_percentage),
+            "evaluation_status": evaluation_status,
+            "overall_score": overall_score,
+            "evaluation_remarks": evaluation_remarks,
+        }
+
+        return Response(context, template_name="dashboard.html")
 
 class AttendanceAPIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -237,10 +308,13 @@ class AttendanceAPIView(APIView):
 
         today = timezone.localdate()
         attendance = Attendance.objects.filter(student=student, date=today).first()
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
 
         return Response({
+            "student_profile": student, 
             "attendance": attendance,
-            "today": today
+            "today": today,
+            "recent_logs": recent_logs,  # ✅ Added this line
         }, template_name=self.template_name)
 
     def post(self, request):
@@ -271,12 +345,115 @@ class AttendanceAPIView(APIView):
         else:
             message = "⚠️ You’ve already timed out for today or invalid action."
 
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
+
         return Response({
+            "student_profile": student, 
             "attendance": attendance,
             "today": today,
+            "recent_logs": recent_logs,  # ✅ Added this line
             "message": message
         }, template_name=self.template_name)
+
     
+#Profile Management
+@method_decorator(csrf_exempt, name='dispatch')
+class StudentProfileView(APIView):
+    """
+    APIView for managing the logged-in student's profile (CRUD).
+    """
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve the current user's profile"""
+        profile = get_object_or_404(StudentProfile, user=request.user)
+        serializer = StudentProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Create a new profile (only if user doesn’t have one yet)"""
+        if hasattr(request.user, 'student_profile'):
+            return Response({'detail': 'Profile already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = StudentProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        """Update current user's profile (partial updates allowed)"""
+        profile = get_object_or_404(StudentProfile, user=request.user)
+        serializer = StudentProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """Delete current user's profile"""
+        profile = get_object_or_404(StudentProfile, user=request.user)
+        profile.delete()
+        return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+def profile_page(request):
+    """
+    Render the profile.html template.
+    This page will interact with StudentProfileView using fetch() or AJAX.
+    """
+    return render(request, 'profile.html')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdminProfileView(APIView):
+    """
+    APIView for managing the logged-in admin's profile (CRUD).
+    """
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve the current user's profile"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        serializer = AdminProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Create a new profile (only if user doesn’t have one yet)"""
+        if hasattr(request.user, 'admin_profile'):
+            return Response({'detail': 'Profile already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AdminProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        """Update current user's profile (partial updates allowed)"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        serializer = AdminProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            print("Incoming data:", request.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """Delete current user's profile"""
+        profile = get_object_or_404(AdminProfile, user=request.user)
+        profile.delete()
+        return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    
+def admin_profile_page(request):
+    """
+    Render the admin_profile.html template.
+    This page will interact with AdminProfileView using fetch() or AJAX.
+    """
+    return render(request, 'admin_profile.html')
+
 # LOGOUT
 def logout_view(request):
     logout(request)
@@ -305,15 +482,36 @@ def attendance_log_view(request):
 
 @login_required
 def company_details_view(request):
-    return render(request, 'company_details.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'company_details.html', {
+        "student_profile": student_profile,  # ✅ Pass this to template
+    })
 
 @login_required
 def progress_tracker_view(request):
-    return render(request, 'progress_tracker.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'progress_tracker.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def evaluation_results_view(request):
-    return render(request, 'evaluation_results.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'evaluation_results.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def profile_view(request):
@@ -326,15 +524,57 @@ def log_hours_view(request):
 
 @login_required
 def submit_report_view(request):
-    # For now, render a simple placeholder page
-    return render(request, 'submit_report.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'submit_report.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def download_forms_view(request):
-    # Placeholder view for download forms page
-    return render(request, 'download_forms.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'download_forms.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
 
 @login_required
 def contact_supervisor_view(request):
-    # You can customize this view with contact form or info later
-    return render(request, 'contact_supervisor.html')
+    try:
+        student_profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        student_profile = None
+
+    return render(request, 'contact_supervisor.html', {
+        "student_profile": student_profile,  # ✅ Pass profile to template
+    })
+
+@login_required
+def manage_interns_view(request):
+    return render(request, 'manage_interns.html')
+
+@login_required
+def manage_companies_view(request):
+    return render(request, 'manage_companies.html')
+
+@login_required
+def attendance_records_view(request):
+    return render(request, 'attendance_records.html')
+
+@login_required
+def evaluations_view(request):
+    return render(request, 'evaluations.html')
+    
+@login_required
+def reports_view(request):
+    return render(request, 'reports.html')
+
+@login_required
+def settings_view(request):
+    return render(request, 'settings.html')
