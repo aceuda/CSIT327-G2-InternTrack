@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,32 +14,37 @@
         .sidebar-gradient {
             background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
         }
+
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+
         .active-link {
             background-color: rgba(255, 255, 255, 0.2);
             border-left: 3px solid white;
         }
+
         .chart-placeholder {
             background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
         }
     </style>
 </head>
+
 <body class="font-inter bg-gray-50 h-full">
-<div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <div class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
-        <div class="p-4 flex items-center justify-between border-b border-blue-800">
-            <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
-            <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
-        </div>
-        <nav class="mt-6">
-            <div class="px-4 py-3 flex items-center text-white active-link">
-                <i data-feather="home" class="w-5 h-5"></i>
-                <span class="ml-3 hidden md:hidden lg:block">Dashboard</span>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div
+            class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+            <div class="p-4 flex items-center justify-between border-b border-blue-800">
+                <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+                <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
             </div>
-            <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+            <nav class="mt-6">
+                <div class="px-4 py-3 flex items-center text-white active-link">
+                    <i data-feather="home" class="w-5 h-5"></i>
+                    <span class="ml-3 hidden md:hidden lg:block">Dashboard</span>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="users" class="w-5 h-5"></i>
                     <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
                 </div>
@@ -60,56 +66,56 @@
                 </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
                     <i data-feather="user" class="w-5 h-5"></i>
-                <a href="admin_profile" class="ml-3 hidden md:hidden lg:block">Profile</a>
-            </div>
+                    <a href="admin_profile" class="ml-3 hidden md:hidden lg:block">Profile</a>
+                </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="settings" class="w-5 h-5"></i>
                     <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Settings</a>
                 </div>
-                <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+                <div
+                    class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="log-out" class="w-5 h-5"></i>
                     <a href="index.html" class="ml-3 hidden md:hidden lg:block">Logout</a>
                 </div>
-            <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
-                <i data-feather="log-out" class="w-5 h-5"></i>
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
-                </form>
-            </div>
-        </nav>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 overflow-auto">
-        <!-- Top Bar -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-            <div class="relative w-64">
-                <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <i data-feather="search" class="absolute left-3 top-2.5 text-gray-400"></i>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div>
+                <div
+                    class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+                    <i data-feather="log-out" class="w-5 h-5"></i>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+                    </form>
                 </div>
-                <div class="flex items-center space-x-2">
-                     {% if admin_profile and admin_profile.profile_image %}
-                    <img src="{{ admin_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full">
-                    {% else %}
-                    <img src="https://ui-avatars.com/api/?name={{ user.username }}" alt="Profile" class="w-8 h-8 rounded-full">
-                    {% endif %}
-                    <span></span>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div></div>
+                <div class="flex items-center space-x-4">
+                    <div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {% if admin_profile and admin_profile.profile_image %}
+                        <img src="{{ admin_profile.profile_image.url }}" alt="Profile" class="w-8 h-8 rounded-full">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ user.username }}" alt="Profile"
+                            class="w-8 h-8 rounded-full">
+                        {% endif %}
+                        <span></span>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- Dashboard Content -->
-        <main class="p-6">
-           <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                Welcome, {{ admin_profile.full_name|default:user.username }}!
-            </h2>
-            <p class="text-gray-600 mb-6">Your role: <strong>{{ user.user_type }}</strong></p>
+            <!-- Dashboard Content -->
+            <main class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                    Welcome, {{ admin_profile.full_name|default:user.username }}!
+                </h2>
+                <p class="text-gray-600 mb-6">Your role: <strong>{{ user.user_type }}</strong></p>
 
-           <!-- Stats Cards -->
+                <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white rounded-lg p-6 card-shadow">
                         <div class="flex justify-between items-center">
@@ -167,7 +173,8 @@
                     <div class="lg:col-span-2 bg-white rounded-lg p-6 card-shadow">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Attendance Overview</h3>
-                            <select class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select
+                                class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option>Last 30 days</option>
                                 <option>Last 90 days</option>
                                 <option>Year to date</option>
@@ -177,7 +184,7 @@
                             <p class="text-gray-500">Attendance trends chart will appear here</p>
                         </div>
                     </div>
-                    
+
                     <!-- Recent Activities -->
                     <div class="bg-white rounded-lg p-6 card-shadow">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
@@ -185,29 +192,43 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intern</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Intern</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Company</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Action</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">John Doe</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">John
+                                            Doe</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">TechCorp</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">Evaluation Submitted</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">Evaluation
+                                            Submitted</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 12</td>
                                     </tr>
                                     <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Jane Smith</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Jane
+                                            Smith</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">DataSystems</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-500">Attendance Issue</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-500">Attendance Issue
+                                        </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 10</td>
                                     </tr>
                                     <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Alex Johnson</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Alex
+                                            Johnson</td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">WebSolutions</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">New Registration</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">New Registration
+                                        </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 8</td>
                                     </tr>
                                 </tbody>
@@ -223,34 +244,39 @@
                 <div class="bg-white rounded-lg p-6 card-shadow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                        <button
+                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
                             <i data-feather="user-plus" class="text-blue-600 w-6 h-6 mb-2"></i>
                             <span class="text-sm text-gray-700">Add Intern</span>
                         </button>
-                        <button class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                        <button
+                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
                             <i data-feather="plus-circle" class="text-blue-600 w-6 h-6 mb-2"></i>
                             <span class="text-sm text-gray-700">Add Company</span>
                         </button>
-                        <button class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                        <button
+                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
                             <i data-feather="file-text" class="text-blue-600 w-6 h-6 mb-2"></i>
                             <span class="text-sm text-gray-700">Generate Report</span>
                         </button>
-                        <button class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                        <button
+                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
                             <i data-feather="mail" class="text-blue-600 w-6 h-6 mb-2"></i>
                             <span class="text-sm text-gray-700">Send Bulk Email</span>
                         </button>
                     </div>
                 </div>
-        </main>
+            </main>
+        </div>
     </div>
-</div>
 
-<script src="{% static 'js/script.js' %}"></script>
-<script>
-    feather.replace();
-    document.addEventListener('DOMContentLoaded', function () {
-        // Any additional JS here
-    });
-</script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        feather.replace();
+        document.addEventListener('DOMContentLoaded', function () {
+            // Any additional JS here
+        });
+    </script>
 </body>
+
 </html>
