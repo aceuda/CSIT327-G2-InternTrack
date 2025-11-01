@@ -36,15 +36,45 @@
         <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
       </div>
       <nav class="mt-6">
-        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
-          <i data-feather="home" class="w-5 h-5"></i>
-          <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
-        </div>
         <div class="px-4 py-3 flex items-center text-white active-link">
-          <i data-feather="user" class="w-5 h-5"></i>
-          <span class="ml-3 hidden md:hidden lg:block">Admin Profile</span>
+          <i data-feather="home" class="w-5 h-5"></i>
+          <span class="ml-3 hidden md:hidden lg:block">Dashboard</span>
         </div>
-        <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="users" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="briefcase" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Manage Companies</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="calendar" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Attendance Records</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="check-circle" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Evaluations</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="file-text" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Reports</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+          <i data-feather="user" class="w-5 h-5"></i>
+          <a href="admin_profile" class="ml-3 hidden md:hidden lg:block">Profile</a>
+        </div>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="settings" class="w-5 h-5"></i>
+          <a href="admin-dashboard.html" class="ml-3 hidden md:hidden lg:block">Settings</a>
+        </div>
+        <div
+          class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
+          <i data-feather="log-out" class="w-5 h-5"></i>
+          <a href="index.html" class="ml-3 hidden md:hidden lg:block">Logout</a>
+        </div>
+        <div
+          class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
           <i data-feather="log-out" class="w-5 h-5"></i>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
