@@ -36,9 +36,9 @@
         <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
       </div>
       <nav class="mt-6">
-        <div class="px-4 py-3 flex items-center text-white active-link">
-          <i data-feather="home" class="w-5 h-5"></i>
-          <span class="ml-3 hidden md:hidden lg:block">Dashboard</span>
+        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+            <i data-feather="home" class="w-5 h-5"></i>
+            <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
         </div>
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
           <i data-feather="users" class="w-5 h-5"></i>
