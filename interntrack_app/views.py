@@ -447,12 +447,9 @@ class AdminProfileView(APIView):
         profile.delete()
         return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
     
-def admin_profile_page(request):
-    """
-    Render the admin_profile.html template.
-    This page will interact with AdminProfileView using fetch() or AJAX.
-    """
-    return render(request, 'admin_profile.html')
+class AdminProfilePage(APIView):
+   def get(self, request):
+        return render(request, 'admin_profile.html')
 
 # LOGOUT
 def logout_view(request):
@@ -555,26 +552,39 @@ def contact_supervisor_view(request):
         "student_profile": student_profile,  # ✅ Pass profile to template
     })
 
-@login_required
-def manage_interns_view(request):
-    return render(request, 'manage_interns.html')
+@method_decorator(login_required, name='dispatch')
+class ManageInternView(APIView):
+    def get(self, request):
+        return render(request, 'manage_interns.html')
 
-@login_required
-def manage_companies_view(request):
-    return render(request, 'manage_companies.html')
-
-@login_required
-def attendance_records_view(request):
-    return render(request, 'attendance_records.html')
-
-@login_required
-def evaluations_view(request):
-    return render(request, 'evaluations.html')
+    # def post(self, request):
+    #     data = request.data
+    #     return render(request, 'manage_intern.html', {'data': data})
     
-@login_required
-def reports_view(request):
-    return render(request, 'reports.html')
+@method_decorator(login_required, name='dispatch')
+class ManageCompanyView(APIView):
+    def get(self, request):
+        return render(request, 'manage_companies.html')
 
-@login_required
-def settings_view(request):
-    return render(request, 'settings.html')
+@method_decorator(login_required, name='dispatch')
+class AttendanceRecordsView(APIView):
+    def get(self, request):
+        return render(request, 'attendance_records.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class EvaluationsView(APIView):
+    def get(self, request):
+        return render(request, 'evaluations.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class ReportsView(APIView):
+    def get(self, request):
+        return render(request, 'reports.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class SettingsView(APIView):
+    def get(self, request):
+        return render(request, 'settings.html')
