@@ -16,6 +16,10 @@ class Intern(models.Model):
     def __str__(self):
         return self.name
     
+class StudentStatus(models.TextChoices):
+    ACTIVE = 'Active', 'Active'
+    PENDING = 'Pending', 'Pending'
+    
 #Role options
 class UserRoles(models.TextChoices):
     """
@@ -49,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    #is_staff = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
@@ -62,7 +66,7 @@ class StudentProfile(models.Model):
     program = models.CharField(max_length=100, null=False)
     student_id = models.CharField(max_length=12, null=False, unique=True)
     profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
-    completed_hours = models.PositiveIntegerField(default=0)
+    
     # New DB field
 
     def save(self, *args, **kwargs):
