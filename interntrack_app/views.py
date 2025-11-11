@@ -1,4 +1,5 @@
 from urllib import request
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
 from .models import StudentProfile, Attendance, Evaluation  # adjust model imports as needed
 from django.db import models
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 #Creates & authenticates users via HTML forms
 #Handles the logic (HTML forms or API requests)
@@ -555,7 +558,23 @@ def contact_supervisor_view(request):
 @method_decorator(login_required, name='dispatch')
 class ManageInternView(APIView):
     def get(self, request):
-        return render(request, 'manage_interns.html')
+        search_query = request.GET.get('search', '')
+        profiles = StudentProfile.objects.all()
+        paginator = Paginator(profiles, 10)  # Show 10 interns per page
+        serializer = StudentProfileSerializer(profiles, many=True)
+
+        if search_query:
+            profiles = profiles.filter(Q(full_name__icontains=search_query))
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'manage_interns.html', {'page_obj': page_obj,'search_query': search_query,'profiles': serializer.data})
+
+    def delete(self, request, *args, **kwargs):
+        student_id = request.data.get('id')
+        student = get_object_or_404(StudentProfile, id=student_id)
+        student.delete()
+        return JsonResponse({'message': 'Intern deleted successfully'})
 
     # def post(self, request):
     #     data = request.data
