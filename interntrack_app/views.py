@@ -457,7 +457,7 @@ class AdminProfilePage(APIView):
 # LOGOUT
 def logout_view(request):
     logout(request)
-    return render(request, "logout.html")
+    return render(request, "login.html")
     #return redirect("login")
 
 User = get_user_model()
