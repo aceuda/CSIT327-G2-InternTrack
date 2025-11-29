@@ -122,8 +122,31 @@ class Attendance(models.Model):
 
 #Evaluation
 class Evaluation(models.Model):
+<<<<<<< Updated upstream
     student = models.ForeignKey('StudentProfile', on_delete=models.CASCADE)
     score = models.FloatField(default=0)
+=======
+    student = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name="evaluation"
+    )
+
+    date_evaluated = models.DateTimeField(null=True, blank=True)
+
+    # Example: storing answers (optional, editable for you)
+    q1 = models.IntegerField(null=True, blank=True)
+    q2 = models.IntegerField(null=True, blank=True)
+    q3 = models.IntegerField(null=True, blank=True)
+    q4 = models.IntegerField(null=True, blank=True)
+    q5 = models.IntegerField(null=True, blank=True)
+    q6 = models.IntegerField(null=True, blank=True)
+    q7 = models.IntegerField(null=True, blank=True)
+    q8 = models.IntegerField(null=True, blank=True)
+    q9 = models.IntegerField(null=True, blank=True)
+    q10 = models.IntegerField(null=True, blank=True)
+
+>>>>>>> Stashed changes
     remarks = models.TextField(blank=True, null=True)
     date_evaluated = models.DateField(auto_now_add=True)
 
