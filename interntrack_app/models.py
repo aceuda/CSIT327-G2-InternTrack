@@ -123,11 +123,7 @@ class Attendance(models.Model):
 #Evaluation
 class Evaluation(models.Model):
     student = models.ForeignKey(
-<<<<<<< Updated upstream
         'StudentProfile',
-=======
-        StudentProfile,
->>>>>>> Stashed changes
         on_delete=models.CASCADE,
         related_name="evaluation"
     )
