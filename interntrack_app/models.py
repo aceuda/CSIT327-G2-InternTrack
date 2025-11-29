@@ -127,7 +127,8 @@ class Evaluation(models.Model):
         on_delete=models.CASCADE,
         related_name="evaluation"
     )
-    score = models.FloatField(default=0)
+    #score = models.FloatField(default=0)
+    #eval_score = models.FloatField(default=0)
     remarks = models.TextField(blank=True, null=True)
     date_evaluated = models.DateField(auto_now_add=True)
 
