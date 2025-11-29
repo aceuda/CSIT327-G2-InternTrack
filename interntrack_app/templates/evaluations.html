@@ -112,45 +112,79 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
-                                    Intern Name</th>
-                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
-                                    Company</th>
-                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Score
+                                    Name
                                 </th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
-                                    Remarks</th>
-                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Date
-                                    Evaluated</th>
+                                    Program
+                                </th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
+                                    Date Evaluated
+                                </th>
                                 <th class="px-4 py-3 text-center font-medium text-gray-600 uppercase tracking-wider">
-                                    Status</th>
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
+
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">John Doe</td>
-                                <td class="px-4 py-3 text-gray-700">TechCorp Inc.</td>
-                                <td class="px-4 py-3 text-gray-700">95%</td>
-                                <td class="px-4 py-3 text-gray-700">Excellent Performance</td>
-                                <td class="px-4 py-3 text-gray-700">2025-10-30</td>
+
+                            {% for student in page_obj %}
+                            <tr id="student-row-{{ student.id }}">
+                                <td class="px-4 py-3 font-medium text-gray-900">{{ student.full_name }}</td>
+
+                                <td class="px-4 py-3 text-gray-700">{{ student.program }}</td>
+
+                                <td class="px-4 py-3 text-gray-700">
+                                    {% if student.evaluation and student.evaluation.date_evaluated %}
+                                    {{ student.evaluation.date_evaluated|date:"M d, Y" }}
+                                    {% else %}
+                                    <span class="text-gray-400 italic">—</span>
+                                    {% endif %}
+                                </td>
+
                                 <td class="px-4 py-3 text-center">
-                                    <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Completed</span>
+                                    {% if student.evaluation and student.evaluation.date_evaluated %}
+                                    <!-- Disabled button if already evaluated -->
+                                    <button class="px-3 py-1 bg-gray-400 text-white rounded cursor-not-allowed"
+                                        disabled>
+                                        Evaluated
+                                    </button>
+                                    {% else %}
+                                    <!-- Active Evaluate button -->
+                                    <a href="{% url 'evaluate_student' student.id %}"
+                                        class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                        Evaluate
+                                    </a>
+                                    {% endif %}
                                 </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">Jane Smith</td>
-                                <td class="px-4 py-3 text-gray-700">Innovatech</td>
-                                <td class="px-4 py-3 text-gray-700">–</td>
-                                <td class="px-4 py-3 text-gray-700">Pending Evaluation</td>
-                                <td class="px-4 py-3 text-gray-700">–</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span>
+                                <td colspan="4" class="px-4 py-3 text-center text-gray-500">
+                                    No students found for evaluation.
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
+
+                    <div class="mt-4 flex justify-center space-x-2">
+                        {% if page_obj.has_previous %}
+                        <a href="?search={{ request.GET.search }}&page={{ page_obj.previous_page_number }}"
+                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Previous</a>
+                        {% endif %}
+
+                        <span class="px-3 py-1 bg-gray-200 text-gray-800 rounded">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+
+                        {% if page_obj.has_next %}
+                        <a href="?search={{ request.GET.search }}&page={{ page_obj.next_page_number }}"
+                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Next</a>
+                        {% endif %}
+                    </div>
                 </div>
+
 
                 <!-- Pagination -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-600">

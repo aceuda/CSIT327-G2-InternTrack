@@ -436,7 +436,7 @@ class AdminProfileView(APIView):
 
     def put(self, request):
         """Update current user's profile (partial updates allowed)"""
-        profile = get_object_or_404(AdminProfile, user=request.user)
+        profile = get_object_or_404(AdminProfile, user=request.user) 
         serializer = AdminProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

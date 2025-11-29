@@ -52,13 +52,13 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
         fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image']
-        read_only_fields = ['full_name']
+        #read_only_fields = ['full_name']
 
 class AdminProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminProfile
         fields = ['full_name', 'department', 'position', 'employee_id', 'profile_image']
-        read_only_fields = ['full_name']
+        #read_only_fields = ['full_name']
         
 
 class AdminDetailsSerializer(serializers.ModelSerializer):

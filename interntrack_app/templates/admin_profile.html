@@ -114,25 +114,25 @@
 
             <div>
               <label class="block font-medium text-gray-700">Full Name</label>
-              <input type="text" id="full_name" name="full_name" readonly
+              <input type="text" id="full_name" name="full_name" 
                 class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2">
             </div>
 
             <div>
               <label class="block font-medium text-gray-700">Employee ID</label>
-              <input type="text" id="employee_id" name="employee_id" readonly
-                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" readonly>
+              <input type="text" id="employee_id" name="employee_id" 
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" >
             </div>
 
             <div>
               <label class="block font-medium text-gray-700">Department</label>
-              <input type="text" id="department" name="department" readonly
+              <input type="text" id="department" name="department" 
                 class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2">
             </div>
 
             <div>
               <label class="block font-medium text-gray-700">Position</label>
-              <input type="text" id="position" name="position" readonly
+              <input type="text" id="position" name="position" 
                 class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2">
             </div>
 
@@ -181,6 +181,7 @@
       e.preventDefault();
 
       const formData = new FormData();
+      formData.append('full_name', document.getElementById('full_name').value);
       formData.append('employee_id', document.getElementById('employee_id').value);
       formData.append('department', document.getElementById('department').value);
       formData.append('position', document.getElementById('position').value);
