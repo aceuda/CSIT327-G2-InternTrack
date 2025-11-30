@@ -21,7 +21,7 @@ from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from interntrack_app import views
-from interntrack_app.views import AdminProfileView, AdminRegisterView, AttendanceAPIView, CustomTokenView, DashboardView, LoginView, RegisterView, StudentProfileView, admin_profile_page, profile_page
+from interntrack_app.views import AdminProfilePage, AdminProfileView, AdminRegisterView, AttendanceAPIView, AttendanceRecordsView, CustomTokenView, DashboardView, EvaluationsView, LoginView, ManageCompanyView, ManageInternView, RegisterView, ReportsView, SettingsView, StudentProfileView, profile_page
 
 from .router import router
 from django.conf.urls.static import static
@@ -43,7 +43,13 @@ urlpatterns = [
     path('profile/view/', profile_page, name='student-profile-page'),
     # Admin
     path('profile/admin/', AdminProfileView.as_view(), name='admin_profile'),
-    path('dashboard/admin_profile/', admin_profile_page, name='admin_profile_page'),
+    path('admin-profile/', AdminProfilePage.as_view(), name='admin-profile'),
+    path('manage_interns/', ManageInternView.as_view(), name='manage_interns'),
+    path('manage-companies/', ManageCompanyView.as_view(), name='manage_companies'),
+    path('attendance-records/', AttendanceRecordsView.as_view(), name='attendance_records'),
+    path('evaluations/', EvaluationsView.as_view(), name='evaluations'),
+    path('reports/', ReportsView.as_view(), name='reports'),
+    path('settings/', SettingsView.as_view(), name='settings'),
     path('log-hours/', views.log_hours_view, name='log_hours'),
     path('submit-report/', views.submit_report_view, name='submit_report'),
     path('download-forms/', views.download_forms_view, name='download_forms'),

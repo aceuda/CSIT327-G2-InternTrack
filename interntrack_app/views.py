@@ -1,4 +1,5 @@
 from urllib import request
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 from interntrack_app.utils import normalize_admin_data, normalize_student_data
 from .models import StudentProfile, Attendance, Evaluation  # adjust model imports as needed
 from django.db import models
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 #Creates & authenticates users via HTML forms
 #Handles the logic (HTML forms or API requests)
@@ -447,17 +450,14 @@ class AdminProfileView(APIView):
         profile.delete()
         return Response({'detail': 'Profile deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
     
-def admin_profile_page(request):
-    """
-    Render the admin_profile.html template.
-    This page will interact with AdminProfileView using fetch() or AJAX.
-    """
-    return render(request, 'admin_profile.html')
+class AdminProfilePage(APIView):
+   def get(self, request):
+        return render(request, 'admin_profile.html')
 
 # LOGOUT
 def logout_view(request):
     logout(request)
-    return render(request, "logout.html")
+    return render(request, "login.html")
     #return redirect("login")
 
 User = get_user_model()
@@ -555,26 +555,55 @@ def contact_supervisor_view(request):
         "student_profile": student_profile,  # ✅ Pass profile to template
     })
 
-@login_required
-def manage_interns_view(request):
-    return render(request, 'manage_interns.html')
+@method_decorator(login_required, name='dispatch')
+class ManageInternView(APIView):
+    def get(self, request):
+        search_query = request.GET.get('search', '')
+        profiles = StudentProfile.objects.all()
+        paginator = Paginator(profiles, 10)  # Show 10 interns per page
+        serializer = StudentProfileSerializer(profiles, many=True)
 
-@login_required
-def manage_companies_view(request):
-    return render(request, 'manage_companies.html')
+        if search_query:
+            profiles = profiles.filter(Q(full_name__icontains=search_query))
 
-@login_required
-def attendance_records_view(request):
-    return render(request, 'attendance_records.html')
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'manage_interns.html', {'page_obj': page_obj,'search_query': search_query,'profiles': serializer.data})
 
-@login_required
-def evaluations_view(request):
-    return render(request, 'evaluations.html')
+    def delete(self, request, *args, **kwargs):
+        student_id = request.data.get('id')
+        student = get_object_or_404(StudentProfile, id=student_id)
+        student.delete()
+        return JsonResponse({'message': 'Intern deleted successfully'})
+
+    # def post(self, request):
+    #     data = request.data
+    #     return render(request, 'manage_intern.html', {'data': data})
     
-@login_required
-def reports_view(request):
-    return render(request, 'reports.html')
+@method_decorator(login_required, name='dispatch')
+class ManageCompanyView(APIView):
+    def get(self, request):
+        return render(request, 'manage_companies.html')
 
-@login_required
-def settings_view(request):
-    return render(request, 'settings.html')
+@method_decorator(login_required, name='dispatch')
+class AttendanceRecordsView(APIView):
+    def get(self, request):
+        return render(request, 'attendance_records.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class EvaluationsView(APIView):
+    def get(self, request):
+        return render(request, 'evaluations.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class ReportsView(APIView):
+    def get(self, request):
+        return render(request, 'reports.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class SettingsView(APIView):
+    def get(self, request):
+        return render(request, 'settings.html')

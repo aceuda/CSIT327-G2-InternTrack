@@ -3,6 +3,7 @@ def normalize_student_data(data):
         "year_level": data.get("year_level", "").strip().title(),  # e.g., "3rd Year"
         "program": data.get("program", "").strip().upper(),          # BSIT
         "student_id": data.get("student_id"),                         # 18-0668-202
+         #"status": data.get("status", "").strip().title()  
     }
 
 def normalize_admin_data(data):
