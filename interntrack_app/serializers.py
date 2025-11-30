@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import AdminProfile, StudentProfile, User
+from .models import AdminProfile, StudentProfile, User, Attendance
 #Serializes the User model for API registration/login
 #bridge between our database models and API endpoints
 #Base logic for user create/update, handles password hashing
@@ -86,3 +86,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['user_type'] = user.user_type
         token['username'] = user.username
         return token
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    # Optionally, you can add nested serializers if you want to include related data, like student info
+    student_name = serializers.CharField(source='student.full_name')  # Adding student name for readability
+
+    class Meta:
+        model = Attendance
+        fields = ['id', 'student', 'student_name', 'date', 'time_in', 'time_out', 'hours_rendered']
+        read_only_fields = ['id', 'student', 'student_name'] 
