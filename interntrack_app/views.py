@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from interntrack_app.models import AdminProfile, Attendance, StudentProfile
-from interntrack_app.serializers import AdminProfileSerializer, BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer
+from interntrack_app.serializers import AdminProfileSerializer, BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer, AttendanceSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
@@ -588,8 +588,52 @@ class ManageCompanyView(APIView):
 @method_decorator(login_required, name='dispatch')
 class AttendanceRecordsView(APIView):
     def get(self, request):
-        return render(request, 'attendance_records.html')
+        # Get search query from the GET parameters
+        search_query = request.GET.get('search', '')
 
+        # Fetch attendance records and filter based on search query
+        attendance_records = Attendance.objects.all().order_by('-date')  # Order by date or any other field
+
+        if search_query:
+            # Filter by intern's full name or date
+            attendance_records = attendance_records.filter(
+                Q(student__full_name__icontains=search_query) |
+                Q(date__icontains=search_query)
+            )
+
+        # Pagination: 10 records per page
+        paginator = Paginator(attendance_records, 10)  # Show 10 records per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Prepare the attendance data to be passed to the template
+        attendance_data = []
+        for record in page_obj:
+            # Fetch the associated student profile
+            student_profile = record.student  # The related StudentProfile object
+            
+            attendance_data.append({
+                'id': record.id,
+                'intern_name': student_profile.full_name,
+                'date': record.date,
+                'time_in': record.time_in,
+                'time_out': record.time_out,
+                'status': "Present" if record.time_out else "Absent",
+            })
+
+        # Pass the paginated data, search query, and student data to the template
+        return render(request, 'attendance_records.html', {
+            'page_obj': page_obj,
+            'attendance_data': attendance_data,  # Pass the list of attendance data to the template
+            'search_query': search_query,
+        })
+
+    def delete(self, request, *args, **kwargs):
+        """Delete an attendance record."""
+        attendance_id = request.data.get('id')
+        attendance = get_object_or_404(Attendance, id=attendance_id)
+        attendance.delete()
+        return JsonResponse({'message': 'Attendance record deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 @method_decorator(login_required, name='dispatch')
 class EvaluationsView(APIView):
