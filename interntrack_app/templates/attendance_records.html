@@ -3,8 +3,8 @@
 <html lang="en" class="h-full">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Attendance Records | InternTrack</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -102,9 +102,11 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                     <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white w-full md:w-1/3">
                         <i data-feather="search" class="text-gray-500 w-5 h-5 mr-2"></i>
-                        <input type="text" placeholder="Search intern or date..." class="w-full text-sm text-gray-700">
+                        <input type="text" id="search-bar" placeholder="Search intern or date..."
+                            class="w-full text-sm text-gray-700">
                     </div>
-                    <select class="border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm text-gray-700">
+                    <select id="status-filter"
+                        class="border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm text-gray-700">
                         <option>All Status</option>
                         <option>Present</option>
                         <option>Absent</option>
@@ -131,43 +133,39 @@
                                     Remarks</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody>
+                            {% for record in attendance_data %}
                             <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">John Doe</td>
-                                <td class="px-4 py-3 text-gray-700">2025-11-01</td>
-                                <td class="px-4 py-3 text-gray-700">08:00 AM</td>
-                                <td class="px-4 py-3 text-gray-700">05:00 PM</td>
+                                <td class="px-4 py-3 font-medium text-gray-900">{{ record.intern_name }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ record.date }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ record.time_in }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ record.time_out }}</td>
                                 <td class="px-4 py-3">
                                     <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Present</span>
+                                        class="px-2 py-1 rounded-full text-xs font-semibold {% if record.status == 'Present' %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                        {{ record.status }}
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 text-center text-gray-700">On Time</td>
+                                <td class="px-4 py-3 text-center text-gray-700">{{ record.remarks }}</td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">Jane Smith</td>
-                                <td class="px-4 py-3 text-gray-700">2025-11-01</td>
-                                <td class="px-4 py-3 text-gray-700">08:30 AM</td>
-                                <td class="px-4 py-3 text-gray-700">05:00 PM</td>
-                                <td class="px-4 py-3">
-                                    <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Late</span>
+                                <td colspan="6" class="px-4 py-3 text-center text-gray-500">No attendance records found.
                                 </td>
-                                <td class="px-4 py-3 text-center text-gray-700">Arrived 30 mins late</td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Pagination -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
-                    <p>Showing 1-2 of 50 records</p>
+                    <p id="page-info">Page 1 of 10</p>
                     <div class="space-x-2">
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">&laquo;
-                            Prev</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md bg-blue-600 text-white">1</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">2</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">Next
-                            &raquo;</button>
+                        <button id="prev-btn" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100"
+                            disabled>« Prev</button>
+                        <button id="next-btn"
+                            class="px-3 py-1 border border-gray-300 rounded-md bg-blue-600 text-white">Next »</button>
                     </div>
                 </div>
             </main>
@@ -175,7 +173,62 @@
     </div>
 
     <script>
-        feather.replace();
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentPage = 1;
+
+            const loadAttendanceRecords = (page = 1, search = '', status = '') => {
+                const url = new URL("{% url 'attendance_records' %}");
+                url.searchParams.append('page', page);
+                url.searchParams.append('search', search);
+                url.searchParams.append('status', status);
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        let rows = '';
+                        data.data.forEach(record => {
+                            rows += `
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-gray-900">${record.intern_name}</td>
+                        <td class="px-4 py-3 text-gray-700">${record.date}</td>
+                        <td class="px-4 py-3 text-gray-700">${record.time_in}</td>
+                        <td class="px-4 py-3 text-gray-700">${record.time_out}</td>
+                        <td class="px-4 py-3">${record.status}</td>
+                        <td class="px-4 py-3 text-center text-gray-700">${record.remarks}</td>
+                    </tr>
+                `;
+                        });
+
+                        document.getElementById('attendance-table').innerHTML = rows;
+                        document.getElementById('page-info').innerHTML = `Page ${data.page_number} of ${data.total_pages}`;
+                        document.getElementById('prev-btn').disabled = !data.has_previous;
+                        document.getElementById('next-btn').disabled = !data.has_next;
+                    })
+                    .catch(error => console.error('Error fetching attendance records:', error));
+            };
+
+            loadAttendanceRecords();
+
+            document.getElementById('next-btn').addEventListener('click', function () {
+                currentPage++;
+                loadAttendanceRecords(currentPage);
+            });
+
+            document.getElementById('prev-btn').addEventListener('click', function () {
+                currentPage--;
+                loadAttendanceRecords(currentPage);
+            });
+
+            document.getElementById('search-bar').addEventListener('keyup', function () {
+                const searchQuery = this.value;
+                loadAttendanceRecords(currentPage, searchQuery);
+            });
+
+            document.getElementById('status-filter').addEventListener('change', function () {
+                const status = this.value;
+                loadAttendanceRecords(currentPage, '', status);
+            });
+        });
     </script>
 </body>
 
