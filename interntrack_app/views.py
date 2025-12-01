@@ -579,6 +579,25 @@ class ManageInternView(APIView):
     # def post(self, request):
     #     data = request.data
     #     return render(request, 'manage_intern.html', {'data': data})
+
+class EvaluationView(APIView):
+    def get(self, request):
+        interns = StudentProfile.objects.all()
+
+        intern_table = [
+            {
+                "id": intern.id,
+                "full_name": intern.full_name,
+                "program": intern.program
+            }
+            for intern in interns
+        ]
+
+        return Response(
+            {"interns": intern_table},
+            status=status.HTTP_200_OK
+        )
+
     
 @method_decorator(login_required, name='dispatch')
 class ManageCompanyView(APIView):

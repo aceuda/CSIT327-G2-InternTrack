@@ -21,7 +21,7 @@ from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from interntrack_app import views
-from interntrack_app.views import AdminProfilePage, AdminProfileView, AdminRegisterView, AttendanceAPIView, AttendanceRecordsView, CustomTokenView, DashboardView, EvaluationsView, LoginView, ManageCompanyView, ManageInternView, RegisterView, ReportsView, SettingsView, StudentProfileView, profile_page
+from interntrack_app.views import AdminProfilePage, AdminProfileView, AdminRegisterView, AttendanceAPIView, AttendanceRecordsView, CustomTokenView, DashboardView, EvaluationView, EvaluationsView, LoginView, ManageCompanyView, ManageInternView, RegisterView, ReportsView, SettingsView, StudentProfileView, profile_page
 
 from .router import router
 from django.conf.urls.static import static
@@ -48,6 +48,7 @@ urlpatterns = [
     path('manage-companies/', ManageCompanyView.as_view(), name='manage_companies'),
     path('attendance-records/', AttendanceRecordsView.as_view(), name='attendance_records'),
     path('evaluations/', EvaluationsView.as_view(), name='evaluations'),
+    path("api/evaluations/", EvaluationView.as_view(), name="evaluation-api"),
     path('reports/', ReportsView.as_view(), name='reports'),
     path('settings/', SettingsView.as_view(), name='settings'),
     path('log-hours/', views.log_hours_view, name='log_hours'),
