@@ -44,28 +44,21 @@
                     <a href="{% url 'manage_interns' %}" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
                 </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
-                    <i data-feather="briefcase" class="w-5 h-5"></i>
-                    <a href="{% url 'manage_companies' %}" class="ml-3 hidden md:hidden lg:block">Manage Companies</a>
-                </div>
-                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="calendar" class="w-5 h-5"></i>
-                    <a href="{% url 'attendance_records' %}" class="ml-3 hidden md:hidden lg:block">Attendance Records</a>
+                    <a href="{% url 'attendance_records' %}" class="ml-3 hidden md:hidden lg:block">Attendance
+                        Records</a>
                 </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="check-circle" class="w-5 h-5"></i>
-                    <a href="{% url 'evaluations' %}"class="ml-3 hidden md:hidden lg:block">Evaluations</a>
+                    <a href="{% url 'evaluations' %}" class="ml-3 hidden md:hidden lg:block">Evaluations</a>
                 </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="file-text" class="w-5 h-5"></i>
                     <a href="{% url 'reports' %}" class="ml-3 hidden md:hidden lg:block">Reports</a>
                 </div>
                 <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
-                    <i data-feather="user" class="w-5 h-5"></i>
-                    <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
-                </div>
-                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="settings" class="w-5 h-5"></i>
-                    <a href="{% url 'settings' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
+                    <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
                 </div>
                 <div
                     class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
@@ -111,13 +104,13 @@
                 <p class="text-gray-600 mb-6">Your role: <strong>{{ user.user_type }}</strong></p>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <div class="bg-white rounded-lg p-6 card-shadow">
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-gray-500 text-sm">Total Interns</p>
-                                <h3 class="text-2xl font-bold text-gray-800 mt-1">127</h3>
-                                <p class="text-green-500 text-sm mt-2">+12% from last month</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ total_interns }}</h3>
+                                <p class="text-blue-500 text-sm mt-2">Active interns</p>
                             </div>
                             <div class="bg-blue-100 p-3 rounded-full">
                                 <i data-feather="users" class="text-blue-600 w-6 h-6"></i>
@@ -127,21 +120,9 @@
                     <div class="bg-white rounded-lg p-6 card-shadow">
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="text-gray-500 text-sm">Active Companies</p>
-                                <h3 class="text-2xl font-bold text-gray-800 mt-1">24</h3>
-                                <p class="text-green-500 text-sm mt-2">+3 new this month</p>
-                            </div>
-                            <div class="bg-green-100 p-3 rounded-full">
-                                <i data-feather="briefcase" class="text-green-600 w-6 h-6"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-6 card-shadow">
-                        <div class="flex justify-between items-center">
-                            <div>
                                 <p class="text-gray-500 text-sm">Pending Evaluations</p>
-                                <h3 class="text-2xl font-bold text-gray-800 mt-1">18</h3>
-                                <p class="text-red-500 text-sm mt-2">5 overdue</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ pending_evaluations }}</h3>
+                                <p class="text-red-500 text-sm mt-2">Awaiting review</p>
                             </div>
                             <div class="bg-yellow-100 p-3 rounded-full">
                                 <i data-feather="alert-circle" class="text-yellow-600 w-6 h-6"></i>
@@ -152,8 +133,8 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-gray-500 text-sm">Attendance Rate</p>
-                                <h3 class="text-2xl font-bold text-gray-800 mt-1">94%</h3>
-                                <p class="text-blue-500 text-sm mt-2">-2% from last week</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ attendance_rate }}%</h3>
+                                <p class="text-blue-500 text-sm mt-2">Overall rate</p>
                             </div>
                             <div class="bg-purple-100 p-3 rounded-full">
                                 <i data-feather="calendar" class="text-purple-600 w-6 h-6"></i>
@@ -162,114 +143,249 @@
                     </div>
                 </div>
 
-                <!-- Reports Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Chart Placeholder -->
-                    <div class="lg:col-span-2 bg-white rounded-lg p-6 card-shadow">
+                <!-- Reports: Evaluation (left) and Attendance+Activities (right stacked) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 md:h-[60vh] gap-6 mb-8">
+                    <!-- Evaluation Overview (left, spans two rows on md) -->
+                    <div class="bg-white rounded-lg p-6 card-shadow h-full md:row-span-2 md:col-start-1 flex flex-col">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Attendance Overview</h3>
-                            <select
-                                class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option>Last 30 days</option>
-                                <option>Last 90 days</option>
-                                <option>Year to date</option>
-                            </select>
+                            <h3 class="text-lg font-semibold text-gray-800">Evaluation Overview</h3>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500">Total Evaluations</p>
+                                <p id="evalCount" class="text-xl font-bold text-gray-800">{{ evaluation_count }}</p>
+                            </div>
                         </div>
-                        <div class="chart-placeholder rounded-lg h-64 flex items-center justify-center">
-                            <p class="text-gray-500">Attendance trends chart will appear here</p>
+
+                        <div class="space-y-3 overflow-y-auto flex-1">
+                            <div id="evaluationOverviewList">
+                                {% for ev in recent_evals %}
+                                <div class="flex items-center justify-between p-3 border-b border-gray-100">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ ev.intern_name }}</p>
+                                        <p class="text-xs text-gray-500">Evaluated on {{ ev.date }}</p>
+                                    </div>
+                                    <button onclick="openEvalDetailModalDash({{ ev.id }})"
+                                        class="text-blue-600 text-sm hover:underline bg-none border-none cursor-pointer">View</button>
+                                </div>
+                                {% empty %}
+                                <p class="text-gray-500 text-sm text-center py-4">No recent evaluations</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-right">
+                            <a href="{% url 'evaluations' %}" class="text-blue-600 text-sm hover:underline">Manage
+                                evaluations</a>
                         </div>
                     </div>
 
-                    <!-- Recent Activities -->
-                    <div class="bg-white rounded-lg p-6 card-shadow">
+                    <!-- Attendance Overview (right top) -->
+                    <div class="bg-white rounded-lg p-6 card-shadow h-full md:row-start-1 md:col-start-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Attendance Overview (Today)</h3>
+                            <button id="weeklyTrendsBtn"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                📊 Weekly Trends
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-green-50 rounded-lg p-4 text-center">
+                                <p class="text-gray-600 text-sm mb-1">Present</p>
+                                <h4 class="text-3xl font-bold text-green-600">{{ present_count }}</h4>
+                            </div>
+                            <div class="bg-red-50 rounded-lg p-4 text-center">
+                                <p class="text-gray-600 text-sm mb-1">Absent</p>
+                                <h4 class="text-3xl font-bold text-red-600">{{ absent_count }}</h4>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                                <p class="text-gray-600 text-sm mb-1">Pending</p>
+                                <h4 class="text-3xl font-bold text-yellow-600">{{ pending_count }}</h4>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-sm mt-6">Updated in real-time</p>
+                        <div class="mt-4 text-right">
+                            <a href="{% url 'attendance_records' %}" class="text-blue-600 text-sm hover:underline">View
+                                full attendance log</a>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities (right bottom) -->
+                    <div class="bg-white rounded-lg p-6 card-shadow h-full md:row-start-2 md:col-start-2 flex flex-col">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Intern</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Company</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Action</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">John
-                                            Doe</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">TechCorp</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">Evaluation
-                                            Submitted</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 12</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Jane
-                                            Smith</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">DataSystems</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-500">Attendance Issue
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 10</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Alex
-                                            Johnson</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">WebSolutions</td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-green-500">New Registration
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">May 8</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="space-y-3 overflow-y-auto flex-1">
+                            {% for activity in recent_activities %}
+                            <div class="pb-3 border-b border-gray-200 last:border-b-0">
+                                <p class="text-sm font-medium text-gray-900">{{ activity.intern_name }}</p>
+                                <p class="text-xs text-gray-500">{{ activity.action }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ activity.date }}</p>
+                            </div>
+                            {% empty %}
+                            <p class="text-gray-500 text-sm text-center py-4">No recent activities</p>
+                            {% endfor %}
                         </div>
                         <div class="mt-4 text-right">
-                            <a href="#" class="text-blue-600 text-sm hover:underline">View all activities</a>
+                            <a href="{% url 'attendance_records' %}" class="text-blue-600 text-sm hover:underline">View
+                                all activities</a>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-lg p-6 card-shadow">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button
-                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                            <i data-feather="user-plus" class="text-blue-600 w-6 h-6 mb-2"></i>
-                            <span class="text-sm text-gray-700">Add Intern</span>
-                        </button>
-                        <button
-                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                            <i data-feather="plus-circle" class="text-blue-600 w-6 h-6 mb-2"></i>
-                            <span class="text-sm text-gray-700">Add Company</span>
-                        </button>
-                        <button
-                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                            <i data-feather="file-text" class="text-blue-600 w-6 h-6 mb-2"></i>
-                            <span class="text-sm text-gray-700">Generate Report</span>
-                        </button>
-                        <button
-                            class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                            <i data-feather="mail" class="text-blue-600 w-6 h-6 mb-2"></i>
-                            <span class="text-sm text-gray-700">Send Bulk Email</span>
-                        </button>
                     </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <script src="{% static 'js/script.js' %}"></script>
+    <!-- Weekly Trends Modal -->
+    <div id="weeklyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800">Weekly Attendance Trends</h2>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for week in weekly_data %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-800">{{ week.week }}</h3>
+                                <p class="text-sm text-gray-500">{{ week.start_date }} - {{ week.end_date }}</p>
+                            </div>
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                {{ week.rate }}%
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+                            <div class="bg-blue-600 h-2.5 rounded-full transition-all" style="width: {{ week.rate }}%">
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <p class="text-gray-600 text-sm">Present</p>
+                                <h4 class="text-xl font-bold text-green-600">{{ week.present }}</h4>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-gray-600 text-sm">Total Days</p>
+                                <h4 class="text-xl font-bold text-gray-800">{{ week.total }}</h4>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-gray-600 text-sm">Attendance</p>
+                                <h4 class="text-xl font-bold text-blue-600">{{ week.rate }}%</h4>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-gray-500 py-8">No attendance data available for the past weeks</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-200 flex justify-end">
+                <button id="closeModal"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
     <script>
         feather.replace();
+
+        // Evaluation detail modal function
+        function openEvalDetailModalDash(evalId) {
+            let modal = document.getElementById('evalDetailModalDash');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'evalDetailModalDash';
+                modal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-800">Evaluation Details</h2>
+                            <button onclick="document.getElementById('evalDetailModalDash').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="pb-4 border-b">
+                                <p class="text-sm text-gray-500">Evaluated Student</p>
+                                <p id="dashDetailStudentName" class="text-lg font-semibold text-gray-800">-</p>
+                                <p id="dashDetailProgram" class="text-sm text-gray-600">-</p>
+                                <p id="dashDetailDate" class="text-sm text-gray-500 mt-1">-</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 mb-3">Evaluation Scores</h3>
+                                <div id="dashDetailScoresContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 mb-2">Remarks</h3>
+                                <p id="dashDetailRemarks" class="text-gray-700 bg-gray-50 p-3 rounded">-</p>
+                            </div>
+                        </div>
+                        <div class="p-6 border-t border-gray-200 flex justify-end">
+                            <button onclick="document.getElementById('evalDetailModalDash').classList.add('hidden')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded transition">Close</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.addEventListener('click', function (e) {
+                    if (e.target === this) this.classList.add('hidden');
+                });
+            }
+            fetch(`/api/evaluation/${evalId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('dashDetailStudentName').textContent = data.student_name;
+                    document.getElementById('dashDetailProgram').textContent = `Program: ${data.program}`;
+                    document.getElementById('dashDetailDate').textContent = `Evaluated: ${data.date_evaluated}`;
+                    document.getElementById('dashDetailRemarks').textContent = data.remarks;
+                    const scoresContainer = document.getElementById('dashDetailScoresContainer');
+                    scoresContainer.innerHTML = '';
+                    for (const [key, item] of Object.entries(data.scores)) {
+                        const scoreDiv = document.createElement('div');
+                        scoreDiv.className = 'p-3 bg-gray-50 rounded';
+                        scoreDiv.innerHTML = `
+                            <p class="text-sm text-gray-600 mb-1">${item.label}</p>
+                            <p class="font-bold text-lg text-blue-600">${item.value || 'N/A'}</p>
+                        `;
+                        scoresContainer.appendChild(scoreDiv);
+                    }
+                    modal.classList.remove('hidden');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error loading evaluation');
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
-            // Any additional JS here
+            const weeklyTrendsBtn = document.getElementById('weeklyTrendsBtn');
+            const weeklyModal = document.getElementById('weeklyModal');
+            const closeModal = document.getElementById('closeModal');
+
+            if (weeklyTrendsBtn) {
+                weeklyTrendsBtn.addEventListener('click', function () {
+                    weeklyModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeModal) {
+                closeModal.addEventListener('click', function () {
+                    weeklyModal.classList.add('hidden');
+                });
+            }
+
+            // Close modal when clicking outside
+            if (weeklyModal) {
+                weeklyModal.addEventListener('click', function (e) {
+                    if (e.target === weeklyModal) {
+                        weeklyModal.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
 </body>
