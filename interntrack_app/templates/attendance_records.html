@@ -47,10 +47,6 @@
                     <i data-feather="users" class="w-5 h-5"></i>
                     <a href="{% url 'manage_interns' %}" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
                 </div>
-                <div class="px-4 py-3 flex items-center hover:bg-blue-700 transition-colors duration-200">
-                    <i data-feather="briefcase" class="w-5 h-5"></i>
-                    <a href="{% url 'manage_companies' %}" class="ml-3 hidden md:hidden lg:block">Manage Companies</a>
-                </div>
                 <div class="px-4 py-3 flex items-center bg-blue-800 transition-colors duration-200">
                     <i data-feather="calendar" class="w-5 h-5"></i>
                     <a href="{% url 'attendance_records' %}"
@@ -65,12 +61,8 @@
                     <a href="{% url 'reports' %}" class="ml-3 hidden md:hidden lg:block">Reports</a>
                 </div>
                 <div class="px-4 py-3 flex items-center hover:bg-blue-700 transition-colors duration-200">
-                    <i data-feather="user" class="w-5 h-5"></i>
-                    <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
-                </div>
-                <div class="px-4 py-3 flex items-center hover:bg-blue-700 transition-colors duration-200">
                     <i data-feather="settings" class="w-5 h-5"></i>
-                    <a href="{% url 'settings' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
+                    <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
                 </div>
                 <div
                     class="absolute bottom-0 w-full px-4 py-3 flex items-center hover:bg-blue-700 transition-colors duration-200">
@@ -105,13 +97,7 @@
                         <input type="text" id="search-bar" placeholder="Search intern or date..."
                             class="w-full text-sm text-gray-700">
                     </div>
-                    <select id="status-filter"
-                        class="border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm text-gray-700">
-                        <option>All Status</option>
-                        <option>Present</option>
-                        <option>Absent</option>
-                        <option>Late</option>
-                    </select>
+                    <!-- status filter removed per request -->
                 </div>
 
                 <!-- Attendance Table -->
@@ -129,11 +115,9 @@
                                     Out</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
                                     Status</th>
-                                <th class="px-4 py-3 text-center font-medium text-gray-600 uppercase tracking-wider">
-                                    Remarks</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="attendance-table">
                             {% for record in attendance_data %}
                             <tr>
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ record.intern_name }}</td>
@@ -146,11 +130,11 @@
                                         {{ record.status }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-center text-gray-700">{{ record.remarks }}</td>
+
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6" class="px-4 py-3 text-center text-gray-500">No attendance records found.
+                                <td colspan="5" class="px-4 py-3 text-center text-gray-500">No attendance records found.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -194,7 +178,6 @@
                         <td class="px-4 py-3 text-gray-700">${record.time_in}</td>
                         <td class="px-4 py-3 text-gray-700">${record.time_out}</td>
                         <td class="px-4 py-3">${record.status}</td>
-                        <td class="px-4 py-3 text-center text-gray-700">${record.remarks}</td>
                     </tr>
                 `;
                         });
@@ -220,13 +203,22 @@
             });
 
             document.getElementById('search-bar').addEventListener('keyup', function () {
-                const searchQuery = this.value;
-                loadAttendanceRecords(currentPage, searchQuery);
-            });
+                const searchQuery = this.value.toLowerCase();
+                const rows = document.querySelectorAll('tbody tr');
 
-            document.getElementById('status-filter').addEventListener('change', function () {
-                const status = this.value;
-                loadAttendanceRecords(currentPage, '', status);
+                rows.forEach(row => {
+                    // Skip rows with only 1 cell (empty state message)
+                    if (row.cells.length < 2) return;
+
+                    const name = row.cells[0].textContent.toLowerCase();
+                    const date = row.cells[1].textContent.toLowerCase();
+
+                    if (searchQuery === '' || name.includes(searchQuery) || date.includes(searchQuery)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             });
         });
     </script>
