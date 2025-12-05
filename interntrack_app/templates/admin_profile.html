@@ -45,10 +45,6 @@
           <a href="{% url 'manage_interns' %}" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
         </div>
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
-          <i data-feather="briefcase" class="w-5 h-5"></i>
-          <a href="{% url 'manage_companies' %}" class="ml-3 hidden md:hidden lg:block">Manage Companies</a>
-        </div>
-        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
           <i data-feather="calendar" class="w-5 h-5"></i>
           <a href="{% url 'attendance_records' %}" class="ml-3 hidden md:hidden lg:block">Attendance
             Records</a>
@@ -62,12 +58,8 @@
           <a href="{% url 'reports' %}" class="ml-3 hidden md:hidden lg:block">Reports</a>
         </div>
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
-          <i data-feather="user" class="w-5 h-5"></i>
-          <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
-        </div>
-        <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
           <i data-feather="settings" class="w-5 h-5"></i>
-          <a href="{% url 'settings' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
+          <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Settings</a>
         </div>
         <div
           class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700 transition-colors duration-200">
@@ -102,9 +94,10 @@
       </header>
 
       <main class="p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">My Profile</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
 
         <div class="bg-white rounded-lg p-6 card-shadow max-w-3xl mx-auto">
+          <h3 class="text-lg font-semibold text-gray-800 mb-6">My Profile</h3>
           <form id="adminProfileForm" enctype="multipart/form-data" class="space-y-4">
             <div class="flex flex-col items-center mb-4">
               <img id="profileImage" src="https://via.placeholder.com/120" alt="Profile Image"
@@ -138,6 +131,34 @@
 
             <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Update
               Profile</button>
+          </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="bg-white rounded-lg p-6 card-shadow max-w-3xl mx-auto mt-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Security Settings</h3>
+          <form id="securityForm" class="space-y-4">
+            {% csrf_token %}
+            <div>
+              <label class="block font-medium text-gray-700">Current Password</label>
+              <input type="password" id="current_password" name="current_password" placeholder="Enter current password"
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-700">New Password</label>
+              <input type="password" id="new_password" name="new_password" placeholder="Enter new password"
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-700">Confirm New Password</label>
+              <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password"
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Update
+              Password</button>
           </form>
         </div>
       </main>
@@ -199,6 +220,48 @@
         loadAdminProfile();
       } else {
         alert('Error updating profile.');
+      }
+    });
+
+    // Password change form handler
+    document.getElementById('securityForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const currentPassword = document.getElementById('current_password').value;
+      const newPassword = document.getElementById('new_password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+
+      // Validate passwords match
+      if (newPassword !== confirmPassword) {
+        alert('New passwords do not match!');
+        return;
+      }
+
+      // Validate password length
+      if (newPassword.length < 8) {
+        alert('New password must be at least 8 characters long!');
+        return;
+      }
+
+      const response = await fetch('/api/change-password/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Password updated successfully!');
+        document.getElementById('securityForm').reset();
+      } else {
+        alert(data.error || 'Error updating password.');
       }
     });
 
