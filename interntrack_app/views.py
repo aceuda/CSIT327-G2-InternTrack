@@ -219,11 +219,125 @@ class DashboardView(APIView):
         user = request.user
 
         # Admin Dashboard
-        # Admin Dashboard
         if getattr(user, "user_type", None) == 'admin':
             admin_profile = getattr(user, "admin_profile", None)
+            
+            # Live intern count
+            total_interns = StudentProfile.objects.count()
+            
+            # Attendance statistics (all interns, today)
+            today = timezone.now().date()
+            today_attendance = Attendance.objects.filter(date=today)
+            
+            present_count = today_attendance.filter(
+                time_in__isnull=False,
+                time_out__isnull=False
+            ).count()
+            absent_count = today_attendance.filter(time_in__isnull=True).count()
+            pending_count = today_attendance.filter(
+                time_in__isnull=False,
+                time_out__isnull=True
+            ).count()
+            
+            # Pending evaluations count
+            pending_evaluations = Evaluation.objects.filter(
+                remarks__isnull=True
+            ).count()
+            
+            # Overall attendance rate (all time)
+            total_attendance_days = Attendance.objects.count()
+            present_days = Attendance.objects.filter(
+                time_in__isnull=False,
+                time_out__isnull=False
+            ).count()
+            attendance_rate = (present_days / total_attendance_days * 100) if total_attendance_days > 0 else 0
+            
+            # Recent activities (last 10 attendance records or evaluations)
+            recent_activities = []
+            
+            # Get recent evaluations
+            recent_evals = Evaluation.objects.select_related('student__user').order_by('-date_evaluated')[:5]
+            for eval_record in recent_evals:
+                recent_activities.append({
+                    'intern_name': eval_record.student.full_name,
+                    'company': eval_record.student.program,  # Using program as placeholder
+                    'action': 'Evaluation Submitted',
+                    'date': eval_record.date_evaluated.strftime('%b %d'),
+                    'type': 'evaluation',
+                })
+            
+            # Get recent attendance changes (time_out logged)
+            recent_attendance = Attendance.objects.select_related('student__user').filter(
+                time_out__isnull=False
+            ).order_by('-date')[:5]
+            for att_record in recent_attendance:
+                recent_activities.append({
+                    'intern_name': att_record.student.full_name,
+                    'company': att_record.student.program,
+                    'action': 'Attendance Logged',
+                    'date': att_record.date.strftime('%b %d'),
+                    'type': 'attendance',
+                })
+            
+            # Sort and limit to 5 most recent
+            recent_activities = sorted(recent_activities, key=lambda x: x['date'], reverse=True)[:5]
+
+            # Prepare recent evaluations list for template (last 5)
+            recent_evals_list = [
+                {
+                    'intern_name': r.student.full_name,
+                    'date': r.date_evaluated.strftime('%b %d'),
+                    'id': r.id
+                }
+                for r in recent_evals[:5]
+            ]
+
+            # Total evaluations count
+            evaluation_count = Evaluation.objects.count()
+            
+            # Weekly attendance trends (past 4 weeks)
+            from datetime import timedelta as td
+            weekly_data = []
+            for week_offset in range(4):
+                week_start = today - td(days=(week_offset * 7) + 7)
+                week_end = today - td(days=week_offset * 7)
+                
+                week_attendance = Attendance.objects.filter(
+                    date__gte=week_start,
+                    date__lt=week_end
+                )
+                
+                week_present = week_attendance.filter(
+                    time_in__isnull=False,
+                    time_out__isnull=False
+                ).count()
+                week_total = week_attendance.count()
+                week_rate = (week_present / week_total * 100) if week_total > 0 else 0
+                
+                weekly_data.insert(0, {
+                    'week': f"Week {5 - week_offset}",
+                    'start_date': week_start.strftime('%b %d'),
+                    'end_date': week_end.strftime('%b %d'),
+                    'present': week_present,
+                    'total': week_total,
+                    'rate': round(week_rate, 1),
+                })
+            
             return Response(
-                {"user": user, "admin_profile": admin_profile},
+                {
+                    "user": user,
+                    "admin_profile": admin_profile,
+                    "total_interns": total_interns,
+                    "present_count": present_count,
+                    "absent_count": absent_count,
+                    "pending_count": pending_count,
+                    "pending_evaluations": pending_evaluations,
+                    "attendance_rate": round(attendance_rate, 1),
+                    "recent_activities": recent_activities,
+                    "recent_evals": recent_evals_list,
+                    "evaluation_count": evaluation_count,
+                    "weekly_data": weekly_data,
+                },
                 template_name="admin_dashboard.html"
             )
 
@@ -509,8 +623,13 @@ def evaluation_results_view(request):
     except StudentProfile.DoesNotExist:
         student_profile = None
 
+    evaluation = None
+    if student_profile:
+        evaluation = Evaluation.objects.filter(student=student_profile).order_by('-date_evaluated').first()
+
     return render(request, 'evaluation_results.html', {
         "student_profile": student_profile,  # ✅ Pass profile to template
+        "evaluation": evaluation,
     })
 
 @login_required
@@ -584,19 +703,68 @@ class EvaluationView(APIView):
     def get(self, request):
         interns = StudentProfile.objects.all()
 
-        intern_table = [
-            {
+        intern_table = []
+        for intern in interns:
+            evaluated = Evaluation.objects.filter(student=intern).exists()
+            latest_eval = Evaluation.objects.filter(student=intern).order_by('-date_evaluated').first()
+            intern_table.append({
                 "id": intern.id,
                 "full_name": intern.full_name,
-                "program": intern.program
-            }
-            for intern in interns
-        ]
+                "program": intern.program,
+                "evaluated": evaluated,
+                "eval_id": latest_eval.id if latest_eval else None
+            })
 
         return Response(
             {"interns": intern_table},
             status=status.HTTP_200_OK
         )
+
+    def post(self, request):
+        """Create a new Evaluation for a student.
+
+        Expected JSON body:
+        {
+            "student_id": 1,
+            "q1": 4, "q2": 5, ..., "q10": 3,
+            "remarks": "..."
+        }
+        """
+        data = request.data
+        student_id = data.get('student_id')
+        if not student_id:
+            return Response({'error': 'student_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = StudentProfile.objects.get(id=student_id)
+        except StudentProfile.DoesNotExist:
+            return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Prevent duplicate evaluation: do not allow a student to be evaluated more than once
+        if Evaluation.objects.filter(student=student).exists():
+            return Response({'error': 'Student has already been evaluated'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Collect q1..q10 safely
+        q_values = {}
+        for i in range(1, 11):
+            key = f'q{i}'
+            val = data.get(key)
+            try:
+                q_values[key] = int(val) if val is not None and val != '' else None
+            except (ValueError, TypeError):
+                q_values[key] = None
+
+        remarks = data.get('remarks', '')
+
+        evaluation = Evaluation.objects.create(
+            student=student,
+            q1=q_values.get('q1'), q2=q_values.get('q2'), q3=q_values.get('q3'), q4=q_values.get('q4'),
+            q5=q_values.get('q5'), q6=q_values.get('q6'), q7=q_values.get('q7'), q8=q_values.get('q8'),
+            q9=q_values.get('q9'), q10=q_values.get('q10'),
+            remarks=remarks
+        )
+
+        return Response({'message': 'Evaluation saved', 'evaluation_id': evaluation.id}, status=status.HTTP_201_CREATED)
 
     
 @method_decorator(login_required, name='dispatch')
@@ -660,6 +828,51 @@ class EvaluationsView(APIView):
         return render(request, 'evaluations.html')
 
 
+@login_required
+def evaluation_detail_view(request, eval_id):
+    # Fetch evaluation or 404
+    evaluation = get_object_or_404(Evaluation, id=eval_id)
+
+    user = request.user
+    # Permission: admin can view any; students can view their own evaluation
+    is_admin = getattr(user, 'user_type', None) == 'admin'
+    is_owner = False
+    try:
+        if hasattr(user, 'student_profile') and evaluation.student == user.student_profile:
+            is_owner = True
+    except Exception:
+        is_owner = False
+
+    if not (is_admin or is_owner):
+        messages.error(request, 'You do not have permission to view this evaluation.')
+        return redirect('dashboard')
+
+    # Human-readable question labels (keep in sync with frontend questionnaire)
+    questions = [
+        ('q1', 'How effectively did the intern complete their tasks and meet deadlines?'),
+        ('q2', 'Did the intern demonstrate a clear understanding of their responsibilities?'),
+        ('q3', "How would you rate the intern's technical skills relevant to the role?"),
+        ('q4', 'Did the intern show improvement in their skills during the internship?'),
+        ('q5', 'How well did the intern communicate with team members and supervisors?'),
+        ('q6', 'Did the intern contribute ideas or suggestions during team discussions?'),
+        ('q7', 'Did the intern show a willingness to learn new skills and tasks?'),
+        ('q8', 'How well did the intern take feedback and apply it to improve their work?'),
+        ('q9', 'How satisfied are you with the intern’s overall performance?'),
+        ('q10', 'Additional numeric question (if any)')
+    ]
+
+    # Build a list of (label, value) for template
+    score_items = []
+    for key, label in questions:
+        score_items.append((label, getattr(evaluation, key, None)))
+
+    return render(request, 'evaluation_detail.html', {
+        'evaluation': evaluation,
+        'questions': {},  # legacy; not used by template
+        'score_items': score_items,
+    })
+
+
 @method_decorator(login_required, name='dispatch')
 class ReportsView(APIView):
     def get(self, request):
@@ -670,3 +883,87 @@ class ReportsView(APIView):
 class SettingsView(APIView):
     def get(self, request):
         return render(request, 'settings.html')
+
+
+class EvaluationDetailAPIView(APIView):
+    """API endpoint to fetch evaluation details as JSON."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, eval_id):
+        evaluation = get_object_or_404(Evaluation, id=eval_id)
+        user = request.user
+        is_admin = getattr(user, 'user_type', None) == 'admin'
+        is_owner = False
+        try:
+            if hasattr(user, 'student_profile') and evaluation.student == user.student_profile:
+                is_owner = True
+        except Exception:
+            is_owner = False
+        if not (is_admin or is_owner):
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        questions = [
+            ('q1', 'How effectively did the intern complete their tasks and meet deadlines?'),
+            ('q2', 'Did the intern demonstrate a clear understanding of their responsibilities?'),
+            ('q3', "How would you rate the intern's technical skills relevant to the role?"),
+            ('q4', 'Did the intern show improvement in their skills during the internship?'),
+            ('q5', 'How well did the intern communicate with team members and supervisors?'),
+            ('q6', 'Did the intern contribute ideas or suggestions during team discussions?'),
+            ('q7', 'Did the intern show a willingness to learn new skills and tasks?'),
+            ('q8', 'How well did the intern take feedback and apply it to improve their work?'),
+            ('q9', 'How satisfied are you with the intern\'s overall performance?'),
+            ('q10', 'Additional numeric question (if any)')
+        ]
+        scores = {}
+        for key, label in questions:
+            scores[key] = {
+                'label': label,
+                'value': getattr(evaluation, key, None)
+            }
+        return Response({
+            'id': evaluation.id,
+            'student_name': evaluation.student.full_name,
+            'program': evaluation.student.program,
+            'date_evaluated': evaluation.date_evaluated.strftime('%b %d, %Y'),
+            'remarks': evaluation.remarks or 'No remarks provided.',
+            'scores': scores
+        }, status=status.HTTP_200_OK)
+
+
+class ChangePasswordAPIView(APIView):
+    """API endpoint to change user password"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        # Validate inputs
+        if not current_password or not new_password:
+            return Response(
+                {'error': 'Current password and new password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if current password is correct
+        if not user.check_password(current_password):
+            return Response(
+                {'error': 'Current password is incorrect.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Validate new password
+        if len(new_password) < 8:
+            return Response(
+                {'error': 'New password must be at least 8 characters long.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {'message': 'Password changed successfully.'},
+            status=status.HTTP_200_OK
+        )
