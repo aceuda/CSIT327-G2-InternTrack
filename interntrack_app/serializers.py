@@ -49,6 +49,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return student
     
 class StudentProfileSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(max_length=None, use_url=True,required=False)
     class Meta:
         model = StudentProfile
         fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image']
