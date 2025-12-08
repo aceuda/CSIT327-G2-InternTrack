@@ -127,6 +127,7 @@
     </div>
   </div>
 
+  {% load static %}
   <script src="{% static 'js/script.js' %}"></script>
   <script>
     feather.replace();
@@ -159,7 +160,7 @@
       document.getElementById('student_id').value = data.student_id || '';
       document.getElementById('program').value = data.program || '';
       document.getElementById('year_level').value = data.year_level || '';
-      document.getElementById('profileImage').src = data.profile_image || 'https://via.placeholder.com/120';
+      document.getElementById('profileImage').src = data.profile_image ? data.profile_image : '/static/images/default_profile.png';
     }
 
     // Update Profile

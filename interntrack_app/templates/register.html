@@ -210,14 +210,6 @@
         <div class="subtext">Fill in your details to get started</div>
 
 
-        {% if messages %}
-          <div class="messages" style="color: red; text-align: center;">
-            {% for message in messages %}
-              <p>{{ message }}</p>
-            {% endfor %}
-          </div>
-        {% endif %}
-
 
         <form method="post" action="{% url 'register' %}">
           {% csrf_token %}
