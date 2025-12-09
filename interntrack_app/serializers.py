@@ -54,8 +54,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     total_rendered_hours = serializers.SerializerMethodField()
     class Meta:
         model = StudentProfile
-        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image', 'total_rendered_hours']
-        read_only_fields = ['full_name']
+        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image','company','address', 'total_rendered_hours']
+        read_only_fields = ['full_name', 'company']
 
     def get_total_rendered_hours(self, obj):
         total_h = Attendance.objects.filter(student__id=obj.id).aggregate(
