@@ -473,6 +473,7 @@ class AttendanceAPIView(APIView):
         else:
             message = "⚠️ You’ve already timed out for today or invalid action."
 
+
         serialize_student = StudentProfileSerializer(student)
         print(serialize_student.data)
         recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]

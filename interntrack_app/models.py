@@ -66,7 +66,9 @@ class StudentProfile(models.Model):
     program = models.CharField(max_length=100, null=False)
     student_id = models.CharField(max_length=12, null=False, unique=True)
     profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    total_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0.00) 
+    total_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    company = models.CharField(max_length=100, default="TestComp")
+    address = models.CharField(max_length=150, null=True, blank=False) 
     
     # New DB field
 
