@@ -19,10 +19,6 @@ class Migration(migrations.Migration):
             model_name='studentprofile',
             name='completed_hours',
         ),
-        migrations.RemoveField(
-            model_name='user',
-            name='is_staff',
-        ),
         migrations.AddField(
             model_name='attendance',
             name='remarks',

@@ -65,7 +65,8 @@ class StudentProfile(models.Model):
     year_level = models.IntegerField(null=False)
     program = models.CharField(max_length=100, null=False)
     student_id = models.CharField(max_length=12, null=False, unique=True)
-    profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
+    profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    total_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0.00) 
     
     # New DB field
 
@@ -117,6 +118,7 @@ class Attendance(models.Model):
             self.hours_rendered = round(delta.total_seconds() / 3600, 2)
             self.save()
 
+
     def __str__(self):
         return f"{self.student.full_name} - {self.date}"
 
@@ -128,7 +130,7 @@ class Evaluation(models.Model):
         related_name="evaluation"
     )
     #score = models.FloatField(default=0)
-    #eval_score = models.FloatField(default=0)
+    eval_score = models.FloatField(default=0)
     remarks = models.TextField(blank=True, null=True)
     date_evaluated = models.DateField(auto_now_add=True)
 
