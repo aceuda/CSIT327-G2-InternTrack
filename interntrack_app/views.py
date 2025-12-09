@@ -410,6 +410,13 @@ class DashboardView(APIView):
 
         return Response(context, template_name="dashboard.html")
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import permissions, renderers
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.utils import timezone
+from .models import Attendance, StudentProfile
+
 class AttendanceAPIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -423,15 +430,18 @@ class AttendanceAPIView(APIView):
         except StudentProfile.DoesNotExist:
             return Response({"error": "Student profile not found"}, template_name=self.template_name)
 
+        serialize_student = StudentProfileSerializer(student)
+        print(serialize_student.data)
         today = timezone.localdate()
         attendance = Attendance.objects.filter(student=student, date=today).first()
-        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]
 
         return Response({
-            "student_profile": student, 
+            "student_profile": student,
             "attendance": attendance,
             "today": today,
-            "recent_logs": recent_logs,  # ✅ Added this line
+            "recent_logs": recent_logs,
+            "total_hours": serialize_student.data['total_rendered_hours'],
         }, template_name=self.template_name)
 
     def post(self, request):
@@ -446,29 +456,33 @@ class AttendanceAPIView(APIView):
 
         attendance, _ = Attendance.objects.get_or_create(student=student, date=today)
 
+        message = ""
+
         # Handle Time In
         if 'time_in' in request.POST and not attendance.time_in:
             attendance.time_in = now.time()
-            attendance.save()
+            attendance.save()  # Only save time_in for now
             message = "✅ Time In recorded successfully."
 
         # Handle Time Out
         elif 'time_out' in request.POST and attendance.time_in and not attendance.time_out:
             attendance.time_out = now.time()
-            attendance.calculate_hours()
-            attendance.save()
+            attendance.calculate_hours()  # ✔ Recalculates hours_rendered AND student.total_hours
             message = "✅ Time Out recorded successfully."
 
         else:
             message = "⚠️ You’ve already timed out for today or invalid action."
 
-        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]  # ✅ Added this line
+        serialize_student = StudentProfileSerializer(student)
+        print(serialize_student.data)
+        recent_logs = Attendance.objects.filter(student=student).order_by('-date')[:7]
 
         return Response({
-            "student_profile": student, 
+            "student_profile": student,
             "attendance": attendance,
             "today": today,
-            "recent_logs": recent_logs,  # ✅ Added this line
+            "recent_logs": recent_logs,
+            "total_hours": serialize_student.data['total_rendered_hours'],
             "message": message
         }, template_name=self.template_name)
 

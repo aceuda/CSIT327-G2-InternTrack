@@ -14,8 +14,9 @@
     .sidebar-gradient {
       background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
     }
+
     .card-shadow {
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
   </style>
 </head>
@@ -38,7 +39,7 @@
           <i data-feather="calendar" class="w-5 h-5"></i>
           <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Attendance Log</a>
         </div>
-        
+
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
           <i data-feather="trending-up" class="w-5 h-5"></i>
           <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
@@ -68,16 +69,14 @@
         <div></div>
         <div class="flex items-center space-x-2">
           <a href="{% url 'student-profile-page' %}" class="block">
-             {% if student_profile and student_profile.profile_image %}
-            <img src="{{ student_profile.profile_image.url }}" 
-                 alt="Profile" 
-                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
-             {% else %}
-            <img src="{% static 'images/default_profile.png' %}" 
-                 alt="Profile" 
-                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
-             {% endif %}
-            </a>
+            {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" alt="Profile"
+              class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+            {% else %}
+            <img src="{% static 'images/default_profile.png' %}" alt="Profile"
+              class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+            {% endif %}
+          </a>
           <span></span>
         </div>
       </header>
@@ -101,15 +100,18 @@
         <!-- Attendance Card -->
         <div class="bg-white rounded-lg p-6 card-shadow max-w-lg mx-auto mb-8">
           {% if attendance %}
-            <div class="space-y-3">
-              <p><span class="font-semibold text-gray-700">Time In:</span> {{ attendance.time_in|default:"—" }}</p>
-              <p><span class="font-semibold text-gray-700">Time Out:</span> {{ attendance.time_out|default:"—" }}</p>
-              <p><span class="font-semibold text-gray-700">Hours Rendered:</span>
-                <span class="text-blue-600">{{ attendance.hours_rendered|default:"0" }}</span> hours
-              </p>
-            </div>
+          <div class="space-y-3">
+            <p><span class="font-semibold text-gray-700">Time In:</span> {{ attendance.time_in|default:"—" }}</p>
+            <p><span class="font-semibold text-gray-700">Time Out:</span> {{ attendance.time_out|default:"—" }}</p>
+            <p><span class="font-semibold text-gray-700">Hours Rendered:</span>
+              <span class="text-blue-600">{{ attendance.hours_rendered|default:"0" }}</span> hours
+            </p>
+            <p><span class="font-semibold text-gray-700">Total Hours Rendered:</span>
+              <span class="text-blue-600">{{total_hours|default:"0" }}</span> hours
+            </p>
+          </div>
           {% else %}
-            <p class="text-gray-500 text-center">No attendance record yet.</p>
+          <p class="text-gray-500 text-center">No attendance record yet.</p>
           {% endif %}
         </div>
 
@@ -118,20 +120,19 @@
           <form method="post">
             {% csrf_token %}
             {% if not attendance.time_in %}
-              <button type="submit" name="time_in"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                Time In
-              </button>
+            <button type="submit" name="time_in"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              Time In
+            </button>
             {% elif not attendance.time_out %}
-              <button type="submit" name="time_out"
-                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                Time Out
-              </button>
+            <button type="submit" name="time_out"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+              Time Out
+            </button>
             {% else %}
-              <button type="button" disabled
-                class="px-6 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
-                Completed
-              </button>
+            <button type="button" disabled class="px-6 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+              Completed
+            </button>
             {% endif %}
           </form>
         </div>
@@ -163,7 +164,7 @@
             </table>
           </div>
           {% else %}
-            <p class="text-gray-500">No attendance logs available.</p>
+          <p class="text-gray-500">No attendance logs available.</p>
           {% endif %}
         </div>
       </main>
@@ -174,4 +175,5 @@
   <script src="{% static 'js/script.js' %}"></script>
   <script>feather.replace();</script>
 </body>
+
 </html>

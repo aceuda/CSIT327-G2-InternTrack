@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.db.models import Sum
 
 from .models import AdminProfile, StudentProfile, User, Attendance
 #Serializes the User model for API registration/login
@@ -50,11 +51,17 @@ class StudentSerializer(serializers.ModelSerializer):
     
 class StudentProfileSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(max_length=None, use_url=True,required=False)
+    total_rendered_hours = serializers.SerializerMethodField()
     class Meta:
         model = StudentProfile
-        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image']
+        fields = ['id', 'full_name', 'year_level', 'program', 'student_id', 'profile_image', 'total_rendered_hours']
         read_only_fields = ['full_name']
 
+    def get_total_rendered_hours(self, obj):
+        total_h = Attendance.objects.filter(student__id=obj.id).aggregate(
+            total = Sum('hours_rendered')
+        )['total']
+        return float(total_h) if total_h is not None else 0.0
 class AdminProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminProfile
