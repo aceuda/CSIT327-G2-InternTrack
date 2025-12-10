@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report Log | InternTrack Admin</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-gray-50 h-full">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <div
+            class="sidebar-gradient text-white w-64 md:w-20 lg:w-64 transition-all duration-300 ease-in-out flex-shrink-0">
+            <div class="p-4 flex items-center justify-between border-b border-blue-800">
+                <h1 class="text-xl font-bold hidden md:block lg:block">InternTrack</h1>
+                <i data-feather="menu" class="md:block lg:hidden cursor-pointer"></i>
+            </div>
+            <nav class="mt-6">
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="home" class="w-5 h-5"></i>
+                    <a href="{% url 'dashboard' %}" class="ml-3 hidden md:hidden lg:block">Dashboard</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="users" class="w-5 h-5"></i>
+                    <a href="{% url 'manage_interns' %}" class="ml-3 hidden md:hidden lg:block">Manage Interns</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="briefcase" class="w-5 h-5"></i>
+                    <a href="{% url 'manage_companies' %}" class="ml-3 hidden md:hidden lg:block">Manage Companies</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="calendar" class="w-5 h-5"></i>
+                    <a href="{% url 'attendance_records' %}" class="ml-3 hidden md:hidden lg:block">Attendance
+                        Records</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="check-circle" class="w-5 h-5"></i>
+                    <a href="{% url 'evaluations' %}" class="ml-3 hidden md:hidden lg:block">Evaluations</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white bg-blue-700">
+                    <i data-feather="file-text" class="w-5 h-5"></i>
+                    <a href="{% url 'report_log' %}" class="ml-3 hidden md:hidden lg:block">Report Log</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                    <a href="{% url 'reports' %}" class="ml-3 hidden md:hidden lg:block">Reports</a>
+                </div>
+                <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="user" class="w-5 h-5"></i>
+                    <a href="{% url 'admin-profile' %}" class="ml-3 hidden md:hidden lg:block">Profile</a>
+                </div>
+                <div class="absolute bottom-0 w-full px-4 py-3 flex items-center text-white hover:bg-blue-700">
+                    <i data-feather="log-out" class="w-5 h-5"></i>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="ml-3 hidden md:hidden lg:block">Logout</button>
+                    </form>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div></div>
+                <div class="flex items-center space-x-2">
+                    {% if admin_profile and admin_profile.profile_image %}
+                    <a href="{% url 'admin-profile' %}">
+                        <img src="{{ admin_profile.profile_image.url }}" alt="Profile"
+                            class="w-8 h-8 rounded-full hover:opacity-80 transition">
+                    </a>
+                    {% else %}
+                    <a href="{% url 'admin-profile' %}">
+                        <img src="{% static 'images/default_profile.png' %}" alt="Profile"
+                            class="w-8 h-8 rounded-full hover:opacity-80 transition">
+                    </a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Report Log</h2>
+
+                <div class="bg-white rounded-lg card-shadow">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Submitted Reports</h3>
+                            <span class="text-sm text-gray-600">Total: {{ reports.count }}</span>
+                        </div>
+
+                        {% if reports %}
+                        <div class="space-y-4">
+                            {% for report in reports %}
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <i data-feather="user" class="w-4 h-4 text-blue-600"></i>
+                                            <span class="font-semibold text-gray-800">{{ report.student.full_name
+                                                }}</span>
+                                            <span class="text-xs text-gray-500">{{ report.student.student_id }}</span>
+                                        </div>
+                                        <h4 class="text-md font-medium text-gray-900 mb-2">{{ report.title }}</h4>
+                                    </div>
+                                    <span class="text-xs text-gray-500">{{ report.submitted_at|date:"M d, Y - g:i A"
+                                        }}</span>
+                                </div>
+                                <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded border-l-4 border-blue-500">
+                                    {{ report.summary }}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-12">
+                            <i data-feather="file-text" class="text-gray-400 w-16 h-16 mx-auto mb-4"></i>
+                            <p class="text-gray-500">No reports have been submitted yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    {% load static %}
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>feather.replace();</script>
+</body>
+
+</html>
