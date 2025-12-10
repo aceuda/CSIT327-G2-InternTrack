@@ -65,8 +65,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 class AdminProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminProfile
-        fields = ['full_name', 'department', 'position', 'employee_id', 'profile_image']
-        read_only_fields = ['full_name']
+        fields = ['full_name', 'department', 'position', 'employee_id', 'profile_image', 'company', 'address']
+        read_only_fields = ['full_name', 'company']
         
 
 class AdminDetailsSerializer(serializers.ModelSerializer):
