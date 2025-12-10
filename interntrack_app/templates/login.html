@@ -185,6 +185,36 @@
         <h2>Welcome!</h2>
         <p class="subtext">Sign in to your account using your username</p>
 
+        {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+           {% if message|stringformat:"s" != "Welcome back" %}
+          <div style="
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        {% if message.tags == 'error' %}
+          background-color: #fee2e2;
+          color: red;
+          border: 1px solid #fca5a5;
+        {% elif message.tags == 'success' %}
+          background-color: #dcfce7;
+          color: #166534;
+          border: 1px solid #86efac;
+        {% else %}
+          background-color: #f3f4f6;
+          color: #374151;
+          border: 1px solid #d1d5db;
+        {% endif %}
+      ">
+            {{ message }}
+          </div>
+           {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
         <form method="POST" action="{% url 'login' %}">
           {% csrf_token %}
 

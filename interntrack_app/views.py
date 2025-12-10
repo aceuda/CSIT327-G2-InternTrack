@@ -155,8 +155,14 @@ class RegisterView(APIView):
         password1 = data.get("password1")
         password2 = data.get("password2")
 
+        context = {
+        "data": data,  # send all submitted values
+        "error": None
+        }
+
         # Password check
         if password1 != password2:
+            context["error"] = "Passwords do not match"
             return Response(
                 {"error": "Passwords do not match"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -164,11 +170,12 @@ class RegisterView(APIView):
             )
         
         if len(password1) < 8:
-            messages.error(request, 'Password must be at least 8 characters long!')
+            context["error"] = "Password must be at least 8 characters long"
             return render(request, 'register.html')
 
         # Username and email checks
         if User.objects.filter(username=username).exists():
+            context["error"] = "Username already taken"
             return Response(
                 {"error": "Username already taken"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -176,6 +183,7 @@ class RegisterView(APIView):
             )
 
         if User.objects.filter(email=email).exists():
+            context["error"] = "Email already registered"
             return Response(
                 {"error": "Email already registered"},
                 status=status.HTTP_400_BAD_REQUEST,

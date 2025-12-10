@@ -13,13 +13,11 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-
     .container {
       display: flex;
       height: 100vh;
       overflow: hidden;
     }
-
 
     .left-panel {
       flex: 2;
@@ -33,13 +31,11 @@
       text-align: center;
     }
 
-
     .left-panel .logo-box img {
       width: 14rem;
       height: 8rem;
       border-radius: 12px;
     }
-
 
     .left-panel h1 {
       font-size: 3rem;
@@ -47,20 +43,17 @@
       margin-bottom: 1rem;
     }
 
-
     .left-panel .subtitle {
       font-size: 1.5rem;
       font-weight: 500;
       margin-bottom: 0.5rem;
     }
 
-
     .left-panel .description {
       font-size: 0.9rem;
       color: #e0e7ff;
       max-width: 300px;
     }
-
 
     .right-panel {
       flex: 1;
@@ -73,7 +66,6 @@
       overflow: hidden;
     }
 
-
     .register-box {
       width: 100%;
       max-width: 450px;
@@ -83,7 +75,6 @@
       box-sizing: border-box;
     }
 
-
     .register-box h2 {
       font-size: 1.5rem;
       font-weight: bold;
@@ -91,14 +82,12 @@
       text-align: center;
     }
 
-
     .register-box .subtext {
       font-size: 0.9rem;
       color: #6b7280;
       margin-bottom: 1.5rem;
       text-align: center;
     }
-
 
     label {
       display: block;
@@ -108,10 +97,8 @@
       font-size: 0.85rem;
     }
 
-
     input[type="text"],
     input[type="email"],
-    input[type="username"],
     input[type="password"],
     input[type="date"] {
       width: 100%;
@@ -121,7 +108,6 @@
       border-radius: 5px;
       box-sizing: border-box;
     }
-
 
     button {
       width: 100%;
@@ -137,11 +123,9 @@
       transition: background-color 0.3s ease;
     }
 
-
     button:hover {
       background-color: #155eab;
     }
-
 
     .text-center {
       text-align: center;
@@ -150,29 +134,31 @@
       color: #6b7280;
     }
 
-
     .text-center a {
       color: #1d74c4;
       text-decoration: none;
       font-weight: 600;
     }
 
-
     .text-center a:hover {
       text-decoration: underline;
     }
 
+    .error-message {
+      color: red;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
 
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
       }
 
-
       .left-panel {
         display: none;
       }
-
 
       .right-panel {
         flex: none;
@@ -180,7 +166,6 @@
         max-width: 100%;
         padding: 1rem;
       }
-
 
       .register-box {
         max-height: 100vh;
@@ -202,64 +187,63 @@
       <div class="description">Start managing internships efficiently</div>
     </div>
 
-
     <!-- Right Panel -->
     <div class="right-panel">
       <div class="register-box">
         <h2>Create Account</h2>
         <div class="subtext">Fill in your details to get started</div>
 
-
+        {% if error %}
+          <div class="error-message">{{ error }}</div>
+        {% endif %}
 
         <form method="post" action="{% url 'register' %}">
           {% csrf_token %}
 
-
           <label for="first_name">First Name</label>
-          <input id="first_name" type="text" name="first_name" required />
-
+          <input id="first_name" type="text" name="first_name" 
+                 value="{{ data.first_name|default_if_none:'' }}" required />
 
           <label for="last_name">Last Name</label>
-          <input id="last_name" type="text" name="last_name" required />
-
+          <input id="last_name" type="text" name="last_name" 
+                 value="{{ data.last_name|default_if_none:'' }}" required />
 
           <label for="suffix">Suffix (optional)</label>
-          <input id="suffix" type="text" name="suffix" placeholder="e.g. Jr., Sr., III" />
-
+          <input id="suffix" type="text" name="suffix" 
+                 value="{{ data.suffix|default_if_none:'' }}" placeholder="e.g. Jr., Sr., III" />
 
           <label for="birthdate">Birthdate</label>
-          <input id="birthdate" type="date" name="birthdate" required />
-
+          <input id="birthdate" type="date" name="birthdate" 
+                 value="{{ data.birthdate|default_if_none:'' }}" required />
 
           <label for="year_level">Year Level</label>
-          <input id="year_level" type="text" name="year_level" placeholder="e.g. 1st Year, 2nd Year" required />
+          <input id="year_level" type="text" name="year_level" 
+                 value="{{ data.year_level|default_if_none:'' }}" placeholder="e.g. 1st Year, 2nd Year" required />
 
           <label for="program">Program</label>
-          <input id="program" type="text" name="program" placeholder="e.g. BSIT, BSCS" required />
+          <input id="program" type="text" name="program" 
+                 value="{{ data.program|default_if_none:'' }}" placeholder="e.g. BSIT, BSCS" required />
 
           <label for="student_id">Student ID</label>
-          <input id="student_id" type="text" name="student_id" placeholder="18-0668-202" required />
-
+          <input id="student_id" type="text" name="student_id" 
+                 value="{{ data.student_id|default_if_none:'' }}" placeholder="18-0668-202" required />
 
           <label for="email">Email</label>
-          <input id="email" type="email" name="email" required />
-
+          <input id="email" type="email" name="email" 
+                 value="{{ data.email|default_if_none:'' }}" required />
 
           <label for="username">Username</label>
-          <input id="username" type="username" name="username" required />
-
+          <input id="username" type="text" name="username" 
+                 value="{{ data.username|default_if_none:'' }}" required />
 
           <label for="password1">Password</label>
           <input id="password1" type="password" name="password1" required />
 
-
           <label for="password2">Confirm Password</label>
           <input id="password2" type="password" name="password2" required />
 
-
           <button type="submit">Create Account</button>
         </form>
-
 
         <div class="text-center">
           Already have an account? <a href="{% url 'login' %}">Sign in here</a>
