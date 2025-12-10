@@ -62,7 +62,7 @@
           <i data-feather="calendar" class="w-5 h-5"></i>
           <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
         </div>
-        
+
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
           <i data-feather="trending-up" class="w-5 h-5"></i>
           <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block">Progress Tracker</a>
@@ -118,13 +118,12 @@
             <span class="text-sm text-gray-600">{{ progress_percentage }}% Complete</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-            <div class="bg-blue-600 h-3 rounded-full" style="width: {{ progress_percentage|floatformat:2|default:0 }}%">
+            <div class="bg-blue-600 h-3 rounded-full" style="width: {{ progress_percentage }}%">
             </div>
           </div>
           <div class="flex justify-between text-sm text-gray-600">
-            <span>Start Date: {{ progress_start }}</span>
-            <span>{{ progress_percentage }}% Complete</span>
-            <span>End Date: {{ progress_end }}</span>
+            <span>Start Date: {{ semester_start_date|date:"F d, Y" }}</span>
+            <span>End Date: {{ semester_end_date|date:"F d, Y" }}</span>
           </div>
         </div>
 
@@ -173,59 +172,79 @@
             </div>
           </div>
 
-          <!-- Right column: Recent Activities (top) and Evaluation (bottom) -->
+          <!-- Right column: Submit Report (top) and Evaluation (bottom) -->
           <div class="space-y-6">
-            <!-- Recent Activities -->
+            <!-- Submit Report Card -->
             <div class="bg-white rounded-lg p-6 card-shadow h-[28vh] overflow-auto">
-              <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Submit Report</h3>
               <div class="space-y-3">
-                {% if recent_activities %}
-                {% for act in recent_activities %}
-                <div class="flex items-start">
-                  <div class="w-2.5 h-2.5 bg-blue-500 rounded-full mr-3 mt-2"></div>
-                  <div>
-                    <div class="text-sm text-gray-800">{{ act.title }}</div>
-                    <div class="text-xs text-gray-500">{{ act.timestamp }}</div>
+                {% if submitted_reports %}
+                {% for report in submitted_reports %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                  <div class="flex items-center flex-1">
+                    <i data-feather="file-text" class="text-blue-600 w-5 h-5 mr-3 flex-shrink-0"></i>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-gray-800 truncate">{{ report.title }}</p>
+                      <p class="text-xs text-gray-500">{{ report.submitted_at|date:"M d, Y" }}</p>
+                    </div>
                   </div>
+                  <span
+                    class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full ml-2 flex-shrink-0">Submitted</span>
                 </div>
                 {% endfor %}
                 {% else %}
-                <div class="text-gray-500">No recent activities.</div>
+                <div class="text-center py-8">
+                  <i data-feather="file-text" class="text-gray-400 w-12 h-12 mx-auto mb-2"></i>
+                  <p class="text-sm text-gray-500">No reports submitted yet</p>
+                </div>
                 {% endif %}
               </div>
               <div class="mt-4 text-right">
-                <a href="{% url 'reports' %}" class="text-blue-600 text-sm hover:underline">View all</a>
+                <button onclick="openReportModal()" class="text-blue-600 text-sm hover:underline cursor-pointer">Submit
+                  new report</button>
               </div>
             </div>
 
-            <!-- Evaluation Overview (under Recent Activities) -->
+            <!-- Evaluation Overview -->
             <div class="bg-white rounded-lg p-6 card-shadow h-[28vh] overflow-auto">
               <h3 class="text-lg font-semibold text-gray-800 mb-4">Evaluation</h3>
-              <div class="flex items-center">
-                <div class="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center">
+              <div class="flex items-center mb-6">
+                <div class="w-24 h-24 flex items-center justify-center">
                   {% if overall_score %}
-                  <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                    <i data-feather="check" class="text-green-600" style="width:20px; height:20px;"></i>
+                  <!-- Filled green circle with centered white check to indicate evaluated -->
+                  <div class="w-24 h-24 rounded-full bg-green-600 flex items-center justify-center shadow-md">
+                    <i data-feather="check" class="text-white" style="width:32px; height:32px; stroke-width:3;"></i>
                   </div>
                   {% else %}
-                  <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
-                    <span class="text-xl text-yellow-600">—</span>
+                  <!-- Un-evaluated state: outlined yellow circle with dash -->
+                  <div
+                    class="w-24 h-24 rounded-full border-4 border-yellow-400 bg-yellow-50 flex items-center justify-center">
+                    <span class="text-2xl text-yellow-600 font-light">—</span>
                   </div>
                   {% endif %}
                 </div>
-                <div class="ml-6">
+                <div class="ml-6 flex-1">
                   {% if overall_score %}
-                  <p class="text-green-600 font-semibold">Evaluated</p>
+                  <p class="text-green-600 font-semibold text-lg">Evaluated</p>
                   <div class="mt-2 flex items-center text-gray-800">
                     <i data-feather="trending-up" class="mr-2 text-green-500"></i>
-                    <span>Latest: {{ overall_score }} pts</span>
+                    <span class="font-medium">Score: {{ overall_score }}/50</span>
                   </div>
+                  {% if evaluation_date %}
+                  <p class="mt-2 text-sm text-gray-500">
+                    <i data-feather="calendar" class="inline-block w-4 h-4 mr-1"></i>
+                    Evaluated on {{ evaluation_date|date:"M d, Y" }}
+                  </p>
+                  {% endif %}
                   {% if evaluation_remarks %}
-                  <p class="mt-2 text-gray-600 italic">"{{ evaluation_remarks }}"</p>
+                  <div class="mt-3 p-3 bg-gray-50 rounded-md">
+                    <p class="text-xs text-gray-500 font-semibold mb-1">Remarks:</p>
+                    <p class="text-sm text-gray-700 italic line-clamp-2">"{{ evaluation_remarks }}"</p>
+                  </div>
                   {% endif %}
                   {% else %}
-                  <p class="text-yellow-600 font-semibold">No evaluations yet.</p>
-                  <p class="mt-2 text-gray-600">You don't have any completed evaluations yet.</p>
+                  <p class="text-yellow-600 font-semibold text-lg">No evaluations yet.</p>
+                  <p class="mt-2 text-gray-600 text-sm">You don't have any completed evaluations yet.</p>
                   {% endif %}
                 </div>
               </div>
@@ -236,40 +255,68 @@
             </div>
           </div>
         </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-lg p-6 card-shadow mt-6 quick-actions">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="{% url 'attendance' %}"
-              class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50">
-              <i data-feather="clock" class="text-blue-600 w-6 h-6 mb-2"></i>
-              <span class="text-sm text-gray-700">Attendance Log</span>
-            </a>
-            <a href="{% url 'submit_report' %}"
-              class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50">
-              <i data-feather="file-text" class="text-blue-600 w-6 h-6 mb-2"></i>
-              <span class="text-sm text-gray-700">Submit Report</span>
-            </a>
-            <a href="{% url 'download_forms' %}"
-              class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50">
-              <i data-feather="download" class="text-blue-600 w-6 h-6 mb-2"></i>
-              <span class="text-sm text-gray-700">Download Forms</span>
-            </a>
-            <a href="{% url 'contact_supervisor' %}"
-              class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:bg-blue-50">
-              <i data-feather="message-square" class="text-blue-600 w-6 h-6 mb-2"></i>
-              <span class="text-sm text-gray-700">Contact Supervisor</span>
-            </a>
-          </div>
-        </div>
       </main>
+    </div>
+  </div>
+
+  <!-- Report Submission Modal -->
+  <div id="reportModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold text-gray-800">Submit Weekly Report</h3>
+        <button onclick="closeReportModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-feather="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <form method="post" action="{% url 'submit_report' %}" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Report Title *</label>
+          <input type="text" name="title" required placeholder="e.g., Week 1 Report (Dec 1-7, 2024)"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Report Summary *</label>
+          <textarea name="summary" rows="6" required
+            placeholder="Write a summary of your weekly tasks, accomplishments, and learnings..."
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" onclick="closeReportModal()"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            Submit Report
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
   {% load static %}
   <script src="{% static 'js/script.js' %}"></script>
-  <script>feather.replace();</script>
+  <script>
+    feather.replace();
+
+    function openReportModal() {
+      document.getElementById('reportModal').classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('reportModal').addEventListener('click', function (event) {
+      if (event.target === this) {
+        closeReportModal();
+      }
+    });
+  </script>
 </body>
 
 </html>
