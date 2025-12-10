@@ -90,16 +90,28 @@
             </header>
 
             <main class="p-6">
-                <!-- Search and Generate -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white w-full md:w-1/3">
-                        <i data-feather="search" class="text-gray-500 w-5 h-5 mr-2"></i>
-                        <input type="text" placeholder="Search reports..." class="w-full text-sm text-gray-700">
+                <!-- Success/Error Messages -->
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div
+                        class="{% if message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-red-100 border-red-400 text-red-700{% endif %} border px-4 py-3 rounded mb-2">
+                        {{ message }}
                     </div>
-                    <button
-                        class="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                        <i data-feather="download" class="w-5 h-5 mr-2"></i> Generate Report
-                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Search -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                    <form method="get" class="w-full md:w-1/3">
+                        <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                            <i data-feather="search" class="text-gray-500 w-5 h-5 mr-2"></i>
+                            <input type="text" name="search" value="{{ search_query }}"
+                                placeholder="Search by title, student name, or ID..."
+                                class="w-full text-sm text-gray-700">
+                        </div>
+                    </form>
                 </div>
 
                 <!-- Reports Table -->
@@ -108,67 +120,153 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
-                                    Report
-                                    Name</th>
+                                    Student</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
+                                    Report Title</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">
+                                    Summary</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Date
-                                    Generated</th>
-                                <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Type
-                                </th>
+                                    Submitted</th>
                                 <th class="px-4 py-3 text-center font-medium text-gray-600 uppercase tracking-wider">
                                     Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">Monthly Attendance Report</td>
-                                <td class="px-4 py-3 text-gray-700">October 31, 2025</td>
-                                <td class="px-4 py-3 text-gray-700">Attendance</td>
+                            {% if reports %}
+                            {% for report in reports %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium text-gray-900">{{ report.student.full_name }}</div>
+                                    <div class="text-xs text-gray-500">{{ report.student.student_id }}</div>
+                                </td>
+                                <td class="px-4 py-3 font-medium text-gray-900">{{ report.title }}</td>
+                                <td class="px-4 py-3 text-gray-700">
+                                    <div class="max-w-md truncate" title="{{ report.summary }}">{{ report.summary }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-gray-700">{{ report.submitted_at|date:"M d, Y - g:i A" }}</td>
                                 <td class="px-4 py-3 text-center space-x-2">
-                                    <button class="text-green-600 hover:text-green-800" title="Download">
-                                        <i data-feather="download" class="w-4 h-4"></i>
+                                    <button
+                                        onclick="viewReport('{{ report.title|escapejs }}', '{{ report.summary|escapejs }}', '{{ report.student.full_name|escapejs }}', '{{ report.submitted_at|date:"
+                                        M d, Y - g:i A" }}')" class="text-blue-600 hover:text-blue-800" title="View">
+                                        <i data-feather="eye" class="w-4 h-4"></i>
                                     </button>
-                                    <button class="text-red-600 hover:text-red-800" title="Delete">
+                                    <button onclick="confirmDelete({{ report.id }}, '{{ report.title|escapejs }}')"
+                                        class="text-red-600 hover:text-red-800" title="Delete">
                                         <i data-feather="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 </td>
                             </tr>
-
+                            {% endfor %}
+                            {% else %}
                             <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">Evaluation Summary Report</td>
-                                <td class="px-4 py-3 text-gray-700">October 25, 2025</td>
-                                <td class="px-4 py-3 text-gray-700">Evaluation</td>
-                                <td class="px-4 py-3 text-center space-x-2">
-                                    <button class="text-green-600 hover:text-green-800" title="Download">
-                                        <i data-feather="download" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800" title="Delete">
-                                        <i data-feather="trash-2" class="w-4 h-4"></i>
-                                    </button>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                    {% if search_query %}
+                                    No reports found matching "{{ search_query }}"
+                                    {% else %}
+                                    No reports have been submitted yet
+                                    {% endif %}
                                 </td>
                             </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination -->
+                <!-- Total Count -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
-                    <p>Showing 1-2 of 10 reports</p>
-                    <div class="space-x-2">
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">&laquo;
-                            Prev</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md bg-blue-600 text-white">1</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">2</button>
-                        <button class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100">Next
-                            &raquo;</button>
-                    </div>
+                    <p>Showing {{ reports.count }} report{{ reports.count|pluralize }}</p>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- View Report Modal -->
+    <div id="viewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800" id="modalTitle"></h3>
+                <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-2"><strong>Student:</strong> <span id="modalStudent"></span></p>
+                <p class="text-sm text-gray-600 mb-4"><strong>Submitted:</strong> <span id="modalDate"></span></p>
+                <div class="bg-gray-50 p-4 rounded border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap" id="modalSummary"></p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeViewModal()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="text-center">
+                <i data-feather="alert-triangle" class="w-12 h-12 text-red-600 mx-auto mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Delete Report</h3>
+                <p class="text-sm text-gray-600 mb-4">Are you sure you want to delete "<span
+                        id="deleteReportTitle"></span>"? This action cannot be undone.</p>
+                <form method="post" id="deleteForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="report_id" id="deleteReportId">
+                    <div class="flex justify-center gap-3">
+                        <button type="button" onclick="closeDeleteModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script src="{% static 'js/script.js' %}"></script>
     <script>
         feather.replace();
+
+        function viewReport(title, summary, student, date) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalStudent').textContent = student;
+            document.getElementById('modalDate').textContent = date;
+            document.getElementById('modalSummary').textContent = summary;
+            document.getElementById('viewModal').classList.remove('hidden');
+            feather.replace();
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+        }
+
+        function confirmDelete(reportId, reportTitle) {
+            document.getElementById('deleteReportId').value = reportId;
+            document.getElementById('deleteReportTitle').textContent = reportTitle;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            feather.replace();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('viewModal').addEventListener('click', function (e) {
+            if (e.target === this) closeViewModal();
+        });
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
+            if (e.target === this) closeDeleteModal();
+        });
     </script>
 </body>
 
