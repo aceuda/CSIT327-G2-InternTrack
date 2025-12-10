@@ -120,6 +120,15 @@ class Attendance(models.Model):
             self.hours_rendered = round(delta.total_seconds() / 3600, 2)
             self.save()
 
+    def get_status(self):
+        """Return attendance status: Present, Pending, or Absent"""
+        if self.time_in is None and self.time_out is None:
+            return "Absent"
+        elif self.time_in and self.time_out:
+            return "Present"
+        elif self.time_in and not self.time_out:
+            return "Pending"
+        return "Absent"
 
     def __str__(self):
         return f"{self.student.full_name} - {self.date}"
@@ -151,6 +160,22 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} - {self.score}"
+
+class Report(models.Model):
+    student = models.ForeignKey(
+        'StudentProfile',
+        on_delete=models.CASCADE,
+        related_name="reports"
+    )
+    title = models.CharField(max_length=200)
+    summary = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.title}"
 
 class BaseUserManager(models.Manager):
     @classmethod
