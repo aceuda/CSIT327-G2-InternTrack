@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db import models
 from interntrack_app.models import AdminProfile, Attendance, StudentProfile
 from interntrack_app.serializers import AdminProfileSerializer, BaseUserSerializer, CustomTokenObtainPairSerializer, StudentProfileSerializer, AttendanceSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -227,22 +228,34 @@ class DashboardView(APIView):
             
             # Attendance statistics (all interns, today)
             today = timezone.now().date()
+            
+            # Auto-create attendance records for all students for today if not exists
+            all_students = StudentProfile.objects.all()
+            for student in all_students:
+                Attendance.objects.get_or_create(
+                    student=student,
+                    date=today,
+                    defaults={'time_in': None, 'time_out': None, 'hours_rendered': 0.00}
+                )
+            
             today_attendance = Attendance.objects.filter(date=today)
             
             present_count = today_attendance.filter(
                 time_in__isnull=False,
                 time_out__isnull=False
             ).count()
-            absent_count = today_attendance.filter(time_in__isnull=True).count()
+            absent_count = today_attendance.filter(
+                time_in__isnull=True,
+                time_out__isnull=True
+            ).count()
             pending_count = today_attendance.filter(
                 time_in__isnull=False,
                 time_out__isnull=True
             ).count()
             
-            # Pending evaluations count
-            pending_evaluations = Evaluation.objects.filter(
-                remarks__isnull=True
-            ).count()
+            # Pending evaluations count - interns without any evaluation
+            evaluated_student_ids = Evaluation.objects.values_list('student_id', flat=True).distinct()
+            pending_evaluations = StudentProfile.objects.exclude(id__in=evaluated_student_ids).count()
             
             # Overall attendance rate (all time)
             total_attendance_days = Attendance.objects.count()
@@ -346,18 +359,20 @@ class DashboardView(APIView):
 
         recent_logs = []
         if profile:
+            # Ensure today's attendance record exists (auto-create if missing)
+            today = timezone.now().date()
+            Attendance.objects.get_or_create(
+                student=profile,
+                date=today,
+                defaults={'time_in': None, 'time_out': None, 'hours_rendered': 0.00}
+            )
+            
             attendance_qs = Attendance.objects.filter(student=profile).order_by('-date')[:5]
             for log in attendance_qs:
-                if not log.time_in:
-                    status = 'Absent'
-                elif not log.time_out:
-                    status = 'Pending'
-                else:
-                    status = 'Present'
                 recent_logs.append({
                     "date": log.date,
                     "hours": log.hours_rendered,
-                    "status": status,
+                    "status": log.get_status(),
                 })
 
         # Attendance rate
@@ -376,36 +391,55 @@ class DashboardView(APIView):
         # OJT hours
         if profile:
             hours_agg = Attendance.objects.filter(student=profile).aggregate(total=models.Sum('hours_rendered'))
-            completed_hours = hours_agg.get('total') or 0
+            completed_hours = float(hours_agg.get('total') or 0)
         else:
-            completed_hours = 0
+            completed_hours = 0.0
 
         total_hours = 400
-        progress_percentage = (completed_hours / total_hours * 100) if total_hours > 0 else 0
+        progress_percentage = round((completed_hours / total_hours * 100), 1) if total_hours > 0 else 0.0
 
         # Evaluation
         evaluation = None
         overall_score = None
         evaluation_remarks = None
+        evaluation_date = None
         if profile:
             evaluation = Evaluation.objects.filter(student=profile).order_by('-date_evaluated').first()
             if evaluation:
-                overall_score = getattr(evaluation, 'score', None)
-                evaluation_remarks = getattr(evaluation, 'remarks', '')
+                # Calculate score from q1-q10 (each question is out of 5, total 50)
+                questions = [evaluation.q1, evaluation.q2, evaluation.q3, evaluation.q4, evaluation.q5,
+                           evaluation.q6, evaluation.q7, evaluation.q8, evaluation.q9, evaluation.q10]
+                # Filter out None values and sum
+                valid_scores = [q for q in questions if q is not None]
+                overall_score = sum(valid_scores) if valid_scores else None
+                evaluation_remarks = evaluation.remarks or ''
+                evaluation_date = evaluation.date_evaluated
 
         evaluation_status = "Completed" if evaluation else "Pending"
+
+        # Get submitted reports
+        submitted_reports = Report.objects.filter(student=profile).order_by('-submitted_at')[:3] if profile else []
+
+        # Semester dates for progress tracker
+        from datetime import datetime
+        semester_start_date = datetime(2024, 10, 1).date()
+        semester_end_date = datetime(2026, 1, 30).date()
 
         context = {
             "user": user,
             "student_profile": profile,
             "attendance_rate": round(attendance_rate, 1),
             "recent_logs": recent_logs,
-            "completed_hours": int(completed_hours),
+            "completed_hours": round(completed_hours, 2),
             "total_hours": total_hours,
-            "progress_percentage": int(progress_percentage),
+            "progress_percentage": progress_percentage,
             "evaluation_status": evaluation_status,
             "overall_score": overall_score,
             "evaluation_remarks": evaluation_remarks,
+            "evaluation_date": evaluation_date,
+            "submitted_reports": submitted_reports,
+            "semester_start_date": semester_start_date,
+            "semester_end_date": semester_end_date,
         }
 
         return Response(context, template_name="dashboard.html")
@@ -415,7 +449,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, renderers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.utils import timezone
-from .models import Attendance, StudentProfile
+from .models import Attendance, StudentProfile, Report
 
 class AttendanceAPIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -627,8 +661,50 @@ def progress_tracker_view(request):
     except StudentProfile.DoesNotExist:
         student_profile = None
 
+    # Initialize default values
+    attendance_rate = 0
+    completed_hours = 0
+    total_hours = 400
+    chart_labels = []
+    chart_attendance_data = []
+    chart_hours_data = []
+
+    if student_profile:
+        # Calculate attendance rate
+        total_days = Attendance.objects.filter(student=student_profile).count()
+        present_days = Attendance.objects.filter(
+            student=student_profile,
+            time_in__isnull=False,
+            time_out__isnull=False
+        ).count()
+        attendance_rate = round((present_days / total_days * 100), 1) if total_days > 0 else 0
+
+        # Calculate OJT hours with 2 decimal places
+        hours_agg = Attendance.objects.filter(student=student_profile).aggregate(
+            total=models.Sum('hours_rendered')
+        )
+        completed_hours = round(float(hours_agg.get('total') or 0), 2)
+
+        # Get daily attendance and hours for chart (last 30 days or all records)
+        attendance_records = Attendance.objects.filter(
+            student=student_profile
+        ).order_by('date')[:30]
+
+        for record in attendance_records:
+            chart_labels.append(record.date.strftime('%b %d'))
+            # Attendance: 1 if present, 0 if absent/pending
+            attendance_status = 1 if (record.time_in and record.time_out) else 0
+            chart_attendance_data.append(attendance_status)
+            chart_hours_data.append(float(record.hours_rendered or 0))
+
     return render(request, 'progress_tracker.html', {
-        "student_profile": student_profile,  # ✅ Pass profile to template
+        "student_profile": student_profile,
+        "attendance_rate": attendance_rate,
+        "completed_hours": completed_hours,
+        "total_hours": total_hours,
+        "chart_labels": chart_labels,
+        "chart_attendance_data": chart_attendance_data,
+        "chart_hours_data": chart_hours_data,
     })
 
 @login_required
@@ -661,10 +737,26 @@ def submit_report_view(request):
     try:
         student_profile = StudentProfile.objects.get(user=request.user)
     except StudentProfile.DoesNotExist:
-        student_profile = None
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        summary = request.POST.get('summary', '').strip()
+
+        if title and summary:
+            Report.objects.create(
+                student=student_profile,
+                title=title,
+                summary=summary
+            )
+            messages.success(request, '✅ Report submitted successfully!')
+        else:
+            messages.error(request, '⚠️ Please fill in both title and summary.')
+        
+        return redirect('dashboard')
 
     return render(request, 'submit_report.html', {
-        "student_profile": student_profile,  # ✅ Pass profile to template
+        "student_profile": student_profile,
     })
 
 @login_required
@@ -687,6 +779,22 @@ def contact_supervisor_view(request):
 
     return render(request, 'contact_supervisor.html', {
         "student_profile": student_profile,  # ✅ Pass profile to template
+    })
+
+@login_required
+def report_log_view(request):
+    # Check if user is admin
+    try:
+        admin_profile = AdminProfile.objects.get(user=request.user)
+    except AdminProfile.DoesNotExist:
+        return redirect('dashboard')
+
+    # Get all reports from all students, ordered by most recent
+    all_reports = Report.objects.select_related('student').all().order_by('-submitted_at')
+
+    return render(request, 'report_log.html', {
+        "admin_profile": admin_profile,
+        "reports": all_reports,
     })
 
 @method_decorator(login_required, name='dispatch')
@@ -820,7 +928,7 @@ class AttendanceRecordsView(APIView):
                 'date': record.date,
                 'time_in': record.time_in,
                 'time_out': record.time_out,
-                'status': "Present" if record.time_out else "Absent",
+                'status': record.get_status(),
             })
 
         # Pass the paginated data, search query, and student data to the template
@@ -891,7 +999,44 @@ def evaluation_detail_view(request, eval_id):
 @method_decorator(login_required, name='dispatch')
 class ReportsView(APIView):
     def get(self, request):
-        return render(request, 'reports.html')
+        # Check if user is admin
+        try:
+            admin_profile = AdminProfile.objects.get(user=request.user)
+        except AdminProfile.DoesNotExist:
+            return redirect('dashboard')
+
+        # Get search query
+        search_query = request.GET.get('search', '').strip()
+
+        # Get all reports
+        reports = Report.objects.select_related('student').all().order_by('-submitted_at')
+
+        # Filter by search query if provided
+        if search_query:
+            reports = reports.filter(
+                models.Q(title__icontains=search_query) |
+                models.Q(student__full_name__icontains=search_query) |
+                models.Q(student__student_id__icontains=search_query)
+            )
+
+        return render(request, 'reports.html', {
+            'admin_profile': admin_profile,
+            'reports': reports,
+            'search_query': search_query,
+        })
+
+    def post(self, request):
+        # Handle delete action
+        report_id = request.POST.get('report_id')
+        if report_id:
+            try:
+                report = Report.objects.get(id=report_id)
+                report.delete()
+                messages.success(request, '✅ Report deleted successfully!')
+            except Report.DoesNotExist:
+                messages.error(request, '⚠️ Report not found.')
+        
+        return redirect('reports')
 
 
 @method_decorator(login_required, name='dispatch')
