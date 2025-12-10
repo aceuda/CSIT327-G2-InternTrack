@@ -122,11 +122,11 @@
                             <tr>
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ record.intern_name }}</td>
                                 <td class="px-4 py-3 text-gray-700">{{ record.date }}</td>
-                                <td class="px-4 py-3 text-gray-700">{{ record.time_in }}</td>
-                                <td class="px-4 py-3 text-gray-700">{{ record.time_out }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ record.time_in|default:"--" }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ record.time_out|default:"--" }}</td>
                                 <td class="px-4 py-3">
                                     <span
-                                        class="px-2 py-1 rounded-full text-xs font-semibold {% if record.status == 'Present' %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                        class="px-2 py-1 rounded-full text-xs font-semibold {% if record.status == 'Present' %}bg-green-100 text-green-700{% elif record.status == 'Absent' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
                                         {{ record.status }}
                                     </span>
                                 </td>
@@ -144,12 +144,30 @@
 
                 <!-- Pagination -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
-                    <p id="page-info">Page 1 of 10</p>
+                    <p>Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+                        records</p>
                     <div class="space-x-2">
-                        <button id="prev-btn" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100"
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                            class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 inline-block">«
+                            Prev</a>
+                        {% else %}
+                        <button
+                            class="px-3 py-1 border border-gray-300 rounded-md bg-gray-200 text-gray-400 cursor-not-allowed"
                             disabled>« Prev</button>
-                        <button id="next-btn"
-                            class="px-3 py-1 border border-gray-300 rounded-md bg-blue-600 text-white">Next »</button>
+                        {% endif %}
+
+                        <span class="px-3 py-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                            class="px-3 py-1 border border-gray-300 rounded-md bg-blue-600 text-white hover:bg-blue-700 inline-block">Next
+                            »</a>
+                        {% else %}
+                        <button
+                            class="px-3 py-1 border border-gray-300 rounded-md bg-gray-200 text-gray-400 cursor-not-allowed"
+                            disabled>Next »</button>
+                        {% endif %}
                     </div>
                 </div>
             </main>
@@ -157,54 +175,13 @@
     </div>
 
     <script>
+        feather.replace();
+
         document.addEventListener('DOMContentLoaded', function () {
-            let currentPage = 1;
-
-            const loadAttendanceRecords = (page = 1, search = '', status = '') => {
-                const url = new URL("{% url 'attendance_records' %}");
-                url.searchParams.append('page', page);
-                url.searchParams.append('search', search);
-                url.searchParams.append('status', status);
-
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        let rows = '';
-                        data.data.forEach(record => {
-                            rows += `
-                    <tr>
-                        <td class="px-4 py-3 font-medium text-gray-900">${record.intern_name}</td>
-                        <td class="px-4 py-3 text-gray-700">${record.date}</td>
-                        <td class="px-4 py-3 text-gray-700">${record.time_in}</td>
-                        <td class="px-4 py-3 text-gray-700">${record.time_out}</td>
-                        <td class="px-4 py-3">${record.status}</td>
-                    </tr>
-                `;
-                        });
-
-                        document.getElementById('attendance-table').innerHTML = rows;
-                        document.getElementById('page-info').innerHTML = `Page ${data.page_number} of ${data.total_pages}`;
-                        document.getElementById('prev-btn').disabled = !data.has_previous;
-                        document.getElementById('next-btn').disabled = !data.has_next;
-                    })
-                    .catch(error => console.error('Error fetching attendance records:', error));
-            };
-
-            loadAttendanceRecords();
-
-            document.getElementById('next-btn').addEventListener('click', function () {
-                currentPage++;
-                loadAttendanceRecords(currentPage);
-            });
-
-            document.getElementById('prev-btn').addEventListener('click', function () {
-                currentPage--;
-                loadAttendanceRecords(currentPage);
-            });
-
+            // Client-side search filter
             document.getElementById('search-bar').addEventListener('keyup', function () {
                 const searchQuery = this.value.toLowerCase();
-                const rows = document.querySelectorAll('tbody tr');
+                const rows = document.querySelectorAll('#attendance-table tr');
 
                 rows.forEach(row => {
                     // Skip rows with only 1 cell (empty state message)
