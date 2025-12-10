@@ -83,6 +83,8 @@ class AdminProfile(models.Model):
     position = models.CharField(max_length=100)
     employee_id = models.CharField(max_length=20, unique=True, editable=False)
     profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True) 
+    company = models.CharField(max_length=100, default="TestComp")
+    address = models.CharField(max_length=150, null=True, blank=False)
 
     
     def save(self, *args, **kwargs):
