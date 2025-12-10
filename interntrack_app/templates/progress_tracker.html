@@ -14,8 +14,9 @@
     .sidebar-gradient {
       background: linear-gradient(180deg, #003366 0%, #0059b3 100%);
     }
+
     .card-shadow {
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
   </style>
 </head>
@@ -37,10 +38,11 @@
           <i data-feather="calendar" class="w-5 h-5"></i>
           <a href="{% url 'attendance' %}" class="ml-3 hidden md:hidden lg:block">Attendance Log</a>
         </div>
-        
+
         <div class="px-4 py-3 flex items-center text-white bg-blue-700">
           <i data-feather="trending-up" class="w-5 h-5"></i>
-          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Progress Tracker</a>
+          <a href="{% url 'progress_tracker' %}" class="ml-3 hidden md:hidden lg:block font-semibold">Progress
+            Tracker</a>
         </div>
         <div class="px-4 py-3 flex items-center text-white hover:bg-blue-700">
           <i data-feather="check-circle" class="w-5 h-5"></i>
@@ -67,16 +69,14 @@
         <div></div>
         <div class="flex items-center space-x-2">
           <a href="{% url 'student-profile-page' %}" class="block">
-             {% if student_profile and student_profile.profile_image %}
-            <img src="{{ student_profile.profile_image.url }}" 
-                 alt="Profile" 
-                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
-             {% else %}
-            <img src="{% static 'images/default_profile.png' %}" 
-                 alt="Profile" 
-                 class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
-             {% endif %}
-            </a>
+            {% if student_profile and student_profile.profile_image %}
+            <img src="{{ student_profile.profile_image.url }}" alt="Profile"
+              class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+            {% else %}
+            <img src="{% static 'images/default_profile.png' %}" alt="Profile"
+              class="w-8 h-8 rounded-full hover:opacity-80 transition duration-200">
+            {% endif %}
+          </a>
           <span></span>
         </div>
       </header>
@@ -86,34 +86,29 @@
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Progress Tracker</h2>
 
         <!-- Progress Cards -->
-        <div class="grid md:grid-cols-3 gap-6">
+        <div class="grid md:grid-cols-2 gap-6">
           <div class="bg-white rounded-lg p-6 card-shadow">
             <h3 class="text-lg font-semibold text-gray-700 mb-2">Attendance Rate</h3>
-            <p class="text-3xl font-bold text-blue-600">{{ attendance_rate|default:"96%" }}</p>
+            <p class="text-3xl font-bold text-blue-600">{{ attendance_rate }}%</p>
             <p class="text-gray-500">Based on logged internship hours</p>
           </div>
 
           <div class="bg-white rounded-lg p-6 card-shadow">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Tasks Completed</h3>
-            <p class="text-3xl font-bold text-green-600">{{ tasks_completed|default:"25" }}/{{ total_tasks|default:"30" }}</p>
-            <p class="text-gray-500">Assigned internship goals</p>
-          </div>
-
-          <div class="bg-white rounded-lg p-6 card-shadow">
             <h3 class="text-lg font-semibold text-gray-700 mb-2">OJT Hours</h3>
-            <p class="text-3xl font-bold text-indigo-600">{{ hours_completed|default:"320" }} / {{ total_hours|default:"400" }}</p>
+            <p class="text-3xl font-bold text-indigo-600">{{ completed_hours }} / {{ total_hours }}</p>
             <p class="text-gray-500">Hours completed</p>
           </div>
         </div>
 
-        <!-- Progress Overview -->
-        <div class="bg-white rounded-lg p-6 card-shadow mt-8">
+        <!-- Progress Overview Chart -->
+        <div class="bg-white rounded-lg p-6 card-shadow mt-8" style="height: 300px;">
           <h3 class="text-lg font-semibold text-gray-700 mb-4">Progress Overview</h3>
-          {% if chart_available %}
-            <!-- Example chart placeholder -->
-            <canvas id="progressChart" class="w-full h-64"></canvas>
+          {% if chart_labels %}
+          <div style="position: relative; height: 230px; width: 100%;">
+            <canvas id="progressChart"></canvas>
+          </div>
           {% else %}
-            <p class="text-gray-600">Your progress chart will appear here once data tracking is enabled.</p>
+          <p class="text-gray-600">Your progress chart will appear here once you start logging attendance.</p>
           {% endif %}
         </div>
       </main>
@@ -124,5 +119,173 @@
   <script src="{% static 'js/script.js' %}"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>feather.replace();</script>
+
+  {% if chart_labels %}
+  <script>
+    const ctx = document.getElementById('progressChart').getContext('2d');
+
+    const progressChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chart_labels| safe }},
+    datasets: [
+      {
+        label: 'Attendance (Present=1, Absent=0)',
+        data: {{ chart_attendance_data| safe }},
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderWidth: 2,
+      tension: 0.3,
+      fill: true,
+      yAxisID: 'y',
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      pointBackgroundColor: 'rgb(59, 130, 246)',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+          },
+      {
+        label: 'Hours Completed',
+        data: {{ chart_hours_data| safe }},
+      borderColor: 'rgb(99, 102, 241)',
+      backgroundColor: 'rgba(99, 102, 241, 0.1)',
+      borderWidth: 2,
+      tension: 0.3,
+      fill: true,
+      yAxisID: 'y1',
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      pointBackgroundColor: 'rgb(99, 102, 241)',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+          }
+    ]
+      },
+    options: {
+      responsive: true,
+        maintainAspectRatio: false,
+          interaction: {
+        mode: 'index',
+          intersect: false,
+        },
+      plugins: {
+        legend: {
+          display: true,
+            position: 'top',
+              labels: {
+            boxWidth: 12,
+              padding: 8,
+                font: {
+              size: 10
+            },
+            usePointStyle: true,
+            }
+        },
+        tooltip: {
+          enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 10,
+                titleFont: {
+            size: 11
+          },
+          bodyFont: {
+            size: 10
+          },
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+              }
+              if (context.parsed.y !== null) {
+                if (context.datasetIndex === 0) {
+                  label += context.parsed.y === 1 ? 'Present' : 'Absent';
+                } else {
+                  label += context.parsed.y.toFixed(2) + ' hrs';
+                }
+              }
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          display: true,
+            title: {
+            display: true,
+              text: 'Date',
+                font: {
+              size: 10
+            }
+          },
+          ticks: {
+            font: {
+              size: 9
+            },
+            maxRotation: 45,
+              minRotation: 45
+          },
+          grid: {
+            display: true,
+              color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        y: {
+          type: 'linear',
+            display: true,
+              position: 'left',
+                title: {
+            display: true,
+              text: 'Attendance',
+                font: {
+              size: 10
+            }
+          },
+          min: 0,
+            max: 1,
+              ticks: {
+            stepSize: 1,
+              font: {
+              size: 9
+            },
+            callback: function(value) {
+              return value === 1 ? 'Present' : 'Absent';
+            }
+          },
+          grid: {
+            color: 'rgba(59, 130, 246, 0.1)'
+          }
+        },
+        y1: {
+          type: 'linear',
+            display: true,
+              position: 'right',
+                title: {
+            display: true,
+              text: 'Hours',
+                font: {
+              size: 10
+            }
+          },
+          grid: {
+            drawOnChartArea: false,
+            },
+          min: 0,
+            ticks: {
+            font: {
+              size: 9
+            },
+            callback: function(value) {
+              return value.toFixed(2);
+            }
+          }
+        },
+      }
+    }
+    });
+  </script>
+  {% endif %}
 </body>
+
 </html>
