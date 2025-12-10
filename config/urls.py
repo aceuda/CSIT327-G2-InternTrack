@@ -52,6 +52,7 @@ urlpatterns = [
     path("api/evaluation/<int:eval_id>/", EvaluationDetailAPIView.as_view(), name="evaluation-detail-api"),
     path("api/change-password/", ChangePasswordAPIView.as_view(), name="change-password-api"),
     path('reports/', ReportsView.as_view(), name='reports'),
+    path('report-log/', views.report_log_view, name='report_log'),
     path('settings/', SettingsView.as_view(), name='settings'),
     path('log-hours/', views.log_hours_view, name='log_hours'),
     path('submit-report/', views.submit_report_view, name='submit_report'),
