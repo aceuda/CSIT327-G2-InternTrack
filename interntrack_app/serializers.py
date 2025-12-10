@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.db.models import Sum
 
-from .models import AdminProfile, StudentProfile, User, Attendance
+from .models import AdminProfile, StudentProfile, User, Attendance, Report
 #Serializes the User model for API registration/login
 #bridge between our database models and API endpoints
 #Base logic for user create/update, handles password hashing
@@ -103,3 +103,11 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = ['id', 'student', 'student_name', 'date', 'time_in', 'time_out', 'hours_rendered']
         read_only_fields = ['id', 'student', 'student_name'] 
+
+class ReportSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    
+    class Meta:
+        model = Report
+        fields = ['id', 'student', 'student_name', 'title', 'summary', 'submitted_at']
+        read_only_fields = ['submitted_at'] 
