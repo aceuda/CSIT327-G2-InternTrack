@@ -364,7 +364,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const weeklyTrendsBtn = document.getElementById('weeklyTrendsBtn');
             const weeklyModal = document.getElementById('weeklyModal');
-            const closeModal = document.getElementById('closeModal');
+            const closeModalButtons = document.querySelectorAll('#closeModal');
 
             if (weeklyTrendsBtn) {
                 weeklyTrendsBtn.addEventListener('click', function () {
@@ -372,11 +372,12 @@
                 });
             }
 
-            if (closeModal) {
-                closeModal.addEventListener('click', function () {
+            // Attach event listener to all close buttons
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', function () {
                     weeklyModal.classList.add('hidden');
                 });
-            }
+            });
 
             // Close modal when clicking outside
             if (weeklyModal) {
